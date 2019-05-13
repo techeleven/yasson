@@ -35,12 +35,7 @@ import javax.json.bind.config.PropertyVisibilityStrategy;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * Resolved properties from JSONB config.
@@ -100,7 +95,7 @@ public class JsonbConfigProperties {
                 case PropertyOrderStrategy.REVERSE:
                     return ReverseTreeMap.class;
                 default:
-                    return HashMap.class;
+                    return LinkedHashMap.class;
             }
         }
         return HashMap.class;
