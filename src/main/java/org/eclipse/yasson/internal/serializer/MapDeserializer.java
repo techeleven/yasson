@@ -15,7 +15,7 @@ package org.eclipse.yasson.internal.serializer;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -74,7 +74,7 @@ public class MapDeserializer<T extends Map<?,?>> extends AbstractContainerDeseri
                     (Map) builder.getJsonbContext().getInstanceCreator().createInstance(defaultMapImplType) :
                     new TreeMap<>();
         }
-        return new HashMap<>();
+        return new LinkedHashMap();
     }
 
     @Override
