@@ -1,11 +1,23 @@
+/*
+ * Copyright (c) 2019, 2020 Oracle and/or its affiliates. All rights reserved.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0,
+ * or the Eclipse Distribution License v. 1.0 which is available at
+ * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
+ */
+
 package org.eclipse.yasson.internal;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbConfig;
-import javax.json.bind.config.PropertyVisibilityStrategy;
+import jakarta.json.bind.Jsonb;
+import jakarta.json.bind.JsonbConfig;
+import jakarta.json.bind.config.PropertyVisibilityStrategy;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.time.LocalDate;
@@ -21,7 +33,8 @@ public class CollectionsWithJavaBaseTypesTest {
     public void testSimple() {
         JavaBasePropertiesInContainer properties = new JavaBasePropertiesInContainer();
         properties.setNames(Arrays.asList("First", "second", null));
-        for(int i=0; i<3; i++) {
+        
+        for(int i = 0; i < 3; i++) {
             List<Integer> integerList = new ArrayList<>();
             integerList.add(0);
             integerList.add(1);
@@ -57,13 +70,13 @@ public class CollectionsWithJavaBaseTypesTest {
         })).build();
 
         String expected = "{\"dates\":[\"2020-01-01\",null],\"innerArrayInts\":[[1,null]],\"listOfListsOfIntegers\":[[0,1,null]],\"names\":[\"First\",\"second\",null],\"optionalInts\":[2147483647,null]}";
-        Assert.assertEquals(expected, jsonb.toJson(properties));
+        assertEquals(expected, jsonb.toJson(properties));
 
         JavaBasePropertiesInContainer result = jsonb.fromJson(expected, JavaBasePropertiesInContainer.class);
-        Assert.assertEquals(properties.getNames(), result.getNames());
-        Assert.assertEquals(properties.getOptionalInts(), result.getOptionalInts());
-        Assert.assertEquals(properties.getListOfListsOfIntegers(), result.getListOfListsOfIntegers());
-        Assert.assertArrayEquals(properties.getInnerArrayInts(), result.getInnerArrayInts());
+        assertEquals(properties.getNames(), result.getNames());
+        assertEquals(properties.getOptionalInts(), result.getOptionalInts());
+        assertEquals(properties.getListOfListsOfIntegers(), result.getListOfListsOfIntegers());
+        assertArrayEquals(properties.getInnerArrayInts(), result.getInnerArrayInts());
     }
 
     public static final class JavaBasePropertiesInContainer {

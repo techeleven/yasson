@@ -1,31 +1,29 @@
-/*******************************************************************************
- * Copyright (c) 2016, 2017 Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2016, 2020 Oracle and/or its affiliates. All rights reserved.
+ *
  * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License v1.0 and Eclipse Distribution License v. 1.0
- * which accompanies this distribution.
- * The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
- * and the Eclipse Distribution License is available at
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0,
+ * or the Eclipse Distribution License v. 1.0 which is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
  *
- * Contributors:
- * Roman Grigoriadi
- ******************************************************************************/
+ * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
+ */
 
 package org.eclipse.yasson.internal.model;
 
-import org.eclipse.yasson.internal.properties.MessageKeys;
-import org.eclipse.yasson.internal.properties.Messages;
-
-import javax.json.bind.JsonbException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import jakarta.json.bind.JsonbException;
+
+import org.eclipse.yasson.internal.properties.MessageKeys;
+import org.eclipse.yasson.internal.properties.Messages;
+
 /**
  * Object holding reference to Constructor / Method for custom object creation.
- *
- * @author Roman Grigoriadi
  */
 public class JsonbCreator {
 
@@ -36,7 +34,7 @@ public class JsonbCreator {
     /**
      * Creates a new instance.
      *
-     * @param executable Executable.
+     * @param executable    Executable.
      * @param creatorModels Parameters.
      */
     public JsonbCreator(Executable executable, CreatorModel[] creatorModels) {
@@ -48,8 +46,8 @@ public class JsonbCreator {
      * Create instance by either constructor or factory method, with provided parameter values and a Class to call on.
      *
      * @param params parameters to be passed into constructor / factory method
-     * @param on class to call onto
-     * @param <T> Type of class / instance
+     * @param on     class to call onto
+     * @param <T>    Type of class / instance
      * @return instance
      */
     @SuppressWarnings("unchecked")

@@ -1,45 +1,33 @@
-/*******************************************************************************
- * Copyright (c) 2015 Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2015, 2020 Oracle and/or its affiliates. All rights reserved.
+ *
  * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License v1.0 and Eclipse Distribution License v. 1.0
- * which accompanies this distribution.
- * The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
- * and the Eclipse Distribution License is available at
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0,
+ * or the Eclipse Distribution License v. 1.0 which is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
  *
- * Contributors:
- * Roman Grigoriadi
- ******************************************************************************/
+ * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
+ */
 
 package org.eclipse.yasson.defaultmapping.collections;
 
-import org.eclipse.yasson.TestTypeToken;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.eclipse.yasson.Jsonbs.*;
 
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
-import javax.json.bind.JsonbConfig;
+import org.eclipse.yasson.TestTypeToken;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
-
 /**
  * @author Roman Grigoriadi
  */
 public class ArrayTest {
-
-    private Jsonb jsonb;
-
-    @Before
-    public void before() {
-        jsonb = JsonbBuilder.create(new JsonbConfig().withNullValues(Boolean.TRUE));
-    }
 
     @Test
     public void testStringArray() {
@@ -50,9 +38,9 @@ public class ArrayTest {
 
         String expected = "[\"first\",\"second\",\"third\"]";
 
-        assertEquals(expected, jsonb.toJson(stringArray));
+        assertEquals(expected, nullableJsonb.toJson(stringArray));
 
-        String[] result = jsonb.fromJson(expected, stringArray.getClass());
+        String[] result = nullableJsonb.fromJson(expected, stringArray.getClass());
         assertEquals("first", result[0]);
         assertEquals("second", result[1]);
         assertEquals("third", result[2]);
@@ -66,8 +54,8 @@ public class ArrayTest {
 
         String expected = "[{\"field\":\"first\"},{\"field\":\"second\"}]";
 
-        assertEquals(expected, jsonb.toJson(objectArray));
-        Object[] result = jsonb.fromJson(expected, objectArray.getClass());
+        assertEquals(expected, nullableJsonb.toJson(objectArray));
+        Object[] result = nullableJsonb.fromJson(expected, objectArray.getClass());
         assertEquals(HashMap.class, result[0].getClass());
         assertEquals(HashMap.class, result[1].getClass());
         assertEquals("first", ((Map) result[0]).get("field"));
@@ -84,8 +72,8 @@ public class ArrayTest {
         listOfArrays.add(stringArray);
 
         String expected = "[[\"first\",\"second\"],[\"first\",\"second\"]]";
-        assertEquals(expected, jsonb.toJson(listOfArrays));
-        List<String[]> result = jsonb.fromJson(expected, new TestTypeToken<ArrayList<String[]>>(){}.getType());
+        assertEquals(expected, nullableJsonb.toJson(listOfArrays));
+        List<String[]> result = nullableJsonb.fromJson(expected, new TestTypeToken<ArrayList<String[]>>(){}.getType());
         assertEquals("first", result.get(0)[0]);
         assertEquals("second", result.get(0)[1]);
         assertEquals("first", result.get(1)[0]);
@@ -100,8 +88,8 @@ public class ArrayTest {
         multi[1][0] = "[1],[0]";
         multi[1][1] = "[1],[1]";
         String expected = "[[\"[0],[0]\",\"[0],[1]\"],[\"[1],[0]\",\"[1],[1]\"]]";
-        assertEquals(expected, jsonb.toJson(multi));
-        String[][] result = jsonb.fromJson(expected, multi.getClass());
+        assertEquals(expected, nullableJsonb.toJson(multi));
+        String[][] result = nullableJsonb.fromJson(expected, multi.getClass());
         assertEquals("[0],[0]", result[0][0]);
         assertEquals("[0],[1]", result[0][1]);
         assertEquals("[1],[0]", result[1][0]);
@@ -111,7 +99,7 @@ public class ArrayTest {
     @Test
     public void testDeserializeJsonArrayIntoObject() {
         String json = "[\"first\",\"second\",\"third\"]";
-        Object result = jsonb.fromJson(json, Object.class);
+        Object result = nullableJsonb.fromJson(json, Object.class);
         assertTrue(result instanceof List);
         assertEquals("first", ((List)result).get(0));
         assertEquals("second", ((List)result).get(1));
@@ -121,7 +109,7 @@ public class ArrayTest {
     @Test
     public void testDeserializeJsonObjectIntoListOfMaps() {
         String json = "[{\"first\":1,\"second\":10}]";
-        Object result = jsonb.fromJson(json, List.class);
+        Object result = nullableJsonb.fromJson(json, List.class);
         assertTrue(result instanceof List);
         assertEquals(BigDecimal.ONE, ((Map) ((List) result).get(0)).get("first"));
         assertEquals(BigDecimal.TEN, ((Map) ((List) result).get(0)).get("second"));
@@ -135,8 +123,8 @@ public class ArrayTest {
         strings[1] = "one";
         arrayValueMap.put("first", strings);
         String expected = "{\"first\":[\"zero\",\"one\"]}";
-        assertEquals(expected, jsonb.toJson(arrayValueMap));
-        Map<String, String[]> result = jsonb.fromJson(expected, new TestTypeToken<HashMap<String, String[]>>(){}.getType());
+        assertEquals(expected, nullableJsonb.toJson(arrayValueMap));
+        Map<String, String[]> result = nullableJsonb.fromJson(expected, new TestTypeToken<HashMap<String, String[]>>(){}.getType());
         assertEquals("zero", result.get("first")[0]);
         assertEquals("one", result.get("first")[1]);
     }
@@ -145,63 +133,63 @@ public class ArrayTest {
     public void testArrayOfNulls() {
         String[] nulls = new String[2];
         String expected = "[null,null]";
-        assertEquals(expected, jsonb.toJson(nulls));
-        String[] result = jsonb.fromJson(expected, nulls.getClass());
+        assertEquals(expected, nullableJsonb.toJson(nulls));
+        String[] result = nullableJsonb.fromJson(expected, nulls.getClass());
         assertTrue(result.length == 2);
         assertNull(result[0]);
         assertNull(result[1]);
 
         Integer ints[] = new Integer[2];
-        Assert.assertEquals(expected, jsonb.toJson(ints));
+        assertEquals(expected, nullableJsonb.toJson(ints));
     }
 
     @Test
     public void testByteArray() {
         byte[] byteArr = {-128, 127};
-        assertEquals("[-128,127]", jsonb.toJson(byteArr));
-        assertArrayEquals(byteArr, jsonb.fromJson("[-128, 127]", byte[].class));
+        assertEquals("[-128,127]", nullableJsonb.toJson(byteArr));
+        assertArrayEquals(byteArr, nullableJsonb.fromJson("[-128, 127]", byte[].class));
     }
 
     @Test
     public void testCharArray() {
         char[] charArr = {'a', 'b', 'c'};
-        assertEquals("[\"a\",\"b\",\"c\"]", jsonb.toJson(charArr));
-        assertArrayEquals(charArr, jsonb.fromJson("[\"a\",\"b\",\"c\"]", char[].class));
+        assertEquals("[\"a\",\"b\",\"c\"]", nullableJsonb.toJson(charArr));
+        assertArrayEquals(charArr, nullableJsonb.fromJson("[\"a\",\"b\",\"c\"]", char[].class));
     }
 
     @Test
     public void testShortArray() {
         short[] shortArr = {-128, 127};
-        assertEquals("[-128,127]", jsonb.toJson(shortArr));
-        assertArrayEquals(shortArr, jsonb.fromJson("[-128, 127]", short[].class));
+        assertEquals("[-128,127]", nullableJsonb.toJson(shortArr));
+        assertArrayEquals(shortArr, nullableJsonb.fromJson("[-128, 127]", short[].class));
     }
 
     @Test
     public void testIntArray() {
         int[] intArr = {-128, 127};
-        assertEquals("[-128,127]", jsonb.toJson(intArr));
-        assertArrayEquals(intArr, jsonb.fromJson("[-128, 127]", int[].class));
+        assertEquals("[-128,127]", nullableJsonb.toJson(intArr));
+        assertArrayEquals(intArr, nullableJsonb.fromJson("[-128, 127]", int[].class));
     }
 
     @Test
     public void testLongArray() {
         long[] longArr = {-128, 127};
-        assertEquals("[-128,127]", jsonb.toJson(longArr));
-        assertArrayEquals(longArr, jsonb.fromJson("[-128, 127]", long[].class));
+        assertEquals("[-128,127]", nullableJsonb.toJson(longArr));
+        assertArrayEquals(longArr, nullableJsonb.fromJson("[-128, 127]", long[].class));
     }
 
     @Test
     public void testFloatArray() {
         float[] floatArr = {-128, 127};
-        assertEquals("[-128.0,127.0]", jsonb.toJson(floatArr));
-        assertArrayEquals(floatArr, jsonb.fromJson("[-128.0, 127.0]", float[].class), 0f);
+        assertEquals("[-128.0,127.0]", nullableJsonb.toJson(floatArr));
+        assertArrayEquals(floatArr, nullableJsonb.fromJson("[-128.0, 127.0]", float[].class), 0f);
     }
 
     @Test
     public void testDoubleArray() {
         double[] doubleArr = {-128, 127};
-        assertEquals("[-128.0,127.0]", jsonb.toJson(doubleArr));
-        assertArrayEquals(doubleArr, jsonb.fromJson("[-128.0, 127.0]", double[].class), 0d);
+        assertEquals("[-128.0,127.0]", nullableJsonb.toJson(doubleArr));
+        assertArrayEquals(doubleArr, nullableJsonb.fromJson("[-128.0, 127.0]", double[].class), 0d);
     }
 
     public static class KeyValue {

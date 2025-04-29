@@ -1,30 +1,35 @@
-/*******************************************************************************
- * Copyright (c) 2015, 2018 Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2015, 2022 Oracle and/or its affiliates. All rights reserved.
+ *
  * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License v1.0 and Eclipse Distribution License v. 1.0
- * which accompanies this distribution.
- * The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
- * and the Eclipse Distribution License is available at
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0,
+ * or the Eclipse Distribution License v. 1.0 which is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
- * <p>
- * Contributors:
- * Dmitry Kornilov - initial implementation
- ******************************************************************************/
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
+ */
+
 package org.eclipse.yasson.internal.model;
 
-import org.eclipse.yasson.internal.ReflectionUtils;
-import org.eclipse.yasson.internal.model.customization.naming.CaseInsensitiveStrategy;
-import org.eclipse.yasson.internal.model.customization.ClassCustomization;
-
-import javax.json.bind.config.PropertyNamingStrategy;
 import java.lang.reflect.Constructor;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+
+import jakarta.json.bind.config.PropertyNamingStrategy;
+
+import org.eclipse.yasson.internal.ClassMultiReleaseExtension;
+import org.eclipse.yasson.internal.ReflectionUtils;
+import org.eclipse.yasson.internal.model.customization.ClassCustomization;
+import org.eclipse.yasson.internal.model.customization.StrategiesProvider;
 
 /**
  * A model for Java class.
- *
- * @author Dmitry Kornilov
  */
 public class ClassModel {
 
@@ -34,7 +39,9 @@ public class ClassModel {
 
     private final ClassModel parentClassModel;
 
-    private final Constructor<?> defaultConstructor;
+    private final AtomicBoolean isInitialized = new AtomicBoolean(false);
+
+    private Constructor<?> defaultConstructor;
 
     /**
      * A map of all class properties, including properties from superclasses. Used to access by name.
@@ -61,17 +68,19 @@ public class ClassModel {
     /**
      * Create instance of class model.
      *
-     * @param clazz Class to model.
-     * @param customization Customization of the class parsed from annotations.
-     * @param parentClassModel Class model of parent class.
+     * @param clazz                  Class to model.
+     * @param customization          Customization of the class parsed from annotations.
+     * @param parentClassModel       Class model of parent class.
      * @param propertyNamingStrategy Property naming strategy.
      */
-    public ClassModel(Class<?> clazz, ClassCustomization customization, ClassModel parentClassModel, PropertyNamingStrategy propertyNamingStrategy) {
+    public ClassModel(Class<?> clazz,
+                      ClassCustomization customization,
+                      ClassModel parentClassModel,
+                      PropertyNamingStrategy propertyNamingStrategy) {
         this.clazz = clazz;
         this.classCustomization = customization;
         this.parentClassModel = parentClassModel;
         this.propertyNamingStrategy = propertyNamingStrategy;
-        this.defaultConstructor = ReflectionUtils.getDefaultConstructor(clazz, false);
         setProperties(new ArrayList<>());
     }
 
@@ -103,26 +112,18 @@ public class ClassModel {
     }
 
     /**
-     * Check if name is equal according to property strategy. In case of {@link CaseInsensitiveStrategy} ignore case.
+     * Check if name is equal according to property strategy.
+     * In case of {@link StrategiesProvider#CASE_INSENSITIVE_STRATEGY} ignore case.
      * User can provide own strategy implementation, cast to custom interface is not an option.
      *
      * @return True if names are equal.
      */
     private boolean equalsReadName(String jsonName, PropertyModel propertyModel) {
         final String propertyReadName = propertyModel.getReadName();
-        if (propertyNamingStrategy instanceof CaseInsensitiveStrategy) {
+        if (propertyNamingStrategy == StrategiesProvider.CASE_INSENSITIVE_STRATEGY) {
             return jsonName.equalsIgnoreCase(propertyReadName);
         }
         return jsonName.equals(propertyReadName);
-    }
-
-    /**
-     * Gets customization.
-     *
-     * @return Customization.
-     */
-    public ClassCustomization getCustomization() {
-        return classCustomization;
     }
 
     /**
@@ -145,6 +146,7 @@ public class ClassModel {
 
     /**
      * Class model of parent class if present.
+     *
      * @return class model of a parent
      */
     public ClassModel getParentClassModel() {
@@ -153,6 +155,7 @@ public class ClassModel {
 
     /**
      * Get sorted class properties copy, combination of field and its getter / setter, javabeans alike.
+     *
      * @return sorted class properties.
      */
     public PropertyModel[] getSortedProperties() {
@@ -165,12 +168,13 @@ public class ClassModel {
      * @param parsedProperties class properties
      */
     public void setProperties(List<PropertyModel> parsedProperties) {
-        sortedProperties = parsedProperties.toArray(new PropertyModel[]{});
+        sortedProperties = parsedProperties.toArray(new PropertyModel[] {});
         this.properties = parsedProperties.stream().collect(Collectors.toMap(PropertyModel::getPropertyName, (mod) -> mod));
     }
 
     /**
      * Get class properties copy, combination of field and its getter / setter, javabeans alike.
+     *
      * @return class properties.
      */
     public Map<String, PropertyModel> getProperties() {
@@ -179,9 +183,29 @@ public class ClassModel {
 
     /**
      * Default no argument constructor of the class used for deserialization.
+     *
      * @return default constructor
      */
     public Constructor<?> getDefaultConstructor() {
+        // Lazy-loads the default constructor to avoid Java 9+ "Illegal reflective access" warnings where possible.
+        // Example: Deserialization into Map won't use this constructor, and therefore never needs to call this method.
+        // Note: Null is a valid result and needs to be cached.
+        if (!isInitialized.get()) {
+            if (ClassMultiReleaseExtension.isRecord(clazz)) {
+                //No default constructor should be used in case of records
+                defaultConstructor = null;
+            } else {
+                defaultConstructor = ReflectionUtils.getDefaultConstructor(clazz, false);
+            }
+            isInitialized.set(true);
+        }
         return defaultConstructor;
+    }
+
+    @Override
+    public String toString() {
+        return "ClassModel{"
+                + "clazz=" + clazz
+                + '}';
     }
 }

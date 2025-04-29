@@ -1,35 +1,33 @@
-/*******************************************************************************
- * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2016, 2020 Oracle and/or its affiliates. All rights reserved.
+ *
  * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License v1.0 and Eclipse Distribution License v. 1.0
- * which accompanies this distribution.
- * The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
- * and the Eclipse Distribution License is available at
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0,
+ * or the Eclipse Distribution License v. 1.0 which is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
  *
- * Contributors:
- * Roman Grigoriadi
- ******************************************************************************/
+ * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
+ */
 
 package org.eclipse.yasson.internal.concurrent;
 
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.eclipse.yasson.defaultmapping.specific.CustomerTest;
 import org.eclipse.yasson.defaultmapping.specific.model.Customer;
-import org.junit.Before;
-import org.junit.Test;
 
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
-import javax.json.bind.JsonbConfig;
-import javax.json.bind.config.PropertyNamingStrategy;
-import javax.json.bind.config.PropertyVisibilityStrategy;
+import jakarta.json.bind.Jsonb;
+import jakarta.json.bind.JsonbBuilder;
+import jakarta.json.bind.JsonbConfig;
+import jakarta.json.bind.config.PropertyNamingStrategy;
+import jakarta.json.bind.config.PropertyVisibilityStrategy;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
-
-import static junit.framework.TestCase.assertEquals;
 
 /**
  * Tests consistency along sharing instances of Jsonb with different JsonbConfig between threads.
@@ -105,14 +103,14 @@ public class MultiTenancyTest extends CustomerTest {
     /**
      * Thread pool for JSONB processing.
      */
-    private ExecutorService jsonbProcessingThreadPool;
-    private CompletionService<JsonProcessingResult<MarshallerTaskResult>> marshallingCompletion;
-    private CompletionService<JsonProcessingResult<Customer>> unmarshallingCompletion;
+    private static ExecutorService jsonbProcessingThreadPool;
+    private static CompletionService<JsonProcessingResult<MarshallerTaskResult>> marshallingCompletion;
+    private static CompletionService<JsonProcessingResult<Customer>> unmarshallingCompletion;
 
     /**
      * Executor for checking results.
      */
-    private ExecutorService resultCheckService;
+    private static ExecutorService resultCheckService;
 
     /**
      * Jsonb instances configuration initialisation.
@@ -141,8 +139,8 @@ public class MultiTenancyTest extends CustomerTest {
         customizedJsonBinding = JsonbBuilder.create(customizedConfig);
     }
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeAll
+    public static void setUp() throws Exception {
         jsonbProcessingThreadPool = Executors.newFixedThreadPool(THREAD_COUNT);
         marshallingCompletion = new ExecutorCompletionService<>(jsonbProcessingThreadPool);
         unmarshallingCompletion = new ExecutorCompletionService<>(jsonbProcessingThreadPool);
@@ -173,7 +171,7 @@ public class MultiTenancyTest extends CustomerTest {
      * would be stale and results will not match.
      */
     private void submitResultCheckingTasks() {
-        resultCheckService.execute(new ResultChecker<MarshallerTaskResult>(marshallingCompletion) {
+        resultCheckService.execute(new ResultChecker<>(marshallingCompletion) {
             @Override
             protected void checkResult(JsonProcessingResult<MarshallerTaskResult> result) {
                 MarshallerTaskResult marshallerResult = result.getResult();
@@ -184,7 +182,7 @@ public class MultiTenancyTest extends CustomerTest {
             }
         });
 
-        resultCheckService.execute(new ResultChecker<Customer>(unmarshallingCompletion) {
+        resultCheckService.execute(new ResultChecker<>(unmarshallingCompletion) {
             @Override
             protected void checkResult(JsonProcessingResult<Customer> result) {
                 //actual check, unmarshalled json result have all expected values.
@@ -200,7 +198,7 @@ public class MultiTenancyTest extends CustomerTest {
      * Chooses shared jsonb instance, either with default or customized key names
      * and submits marshaller an unmarshaller task for it.
      */
-    private void submitJsonbProcessingTasks() {
+    private static void submitJsonbProcessingTasks() {
         for(int i = 0; i< TOTAL_JOB_COUNT; i+=2) {
             boolean even = (i % 4 == 0);
             ConfigurationType jsonbConfiguration = even ? ConfigurationType.DEFAULT : ConfigurationType.CUSTOMIZED;

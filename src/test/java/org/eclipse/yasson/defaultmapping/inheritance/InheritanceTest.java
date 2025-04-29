@@ -1,17 +1,20 @@
-/*******************************************************************************
- * Copyright (c) 2015 Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2015, 2022 Oracle and/or its affiliates. All rights reserved.
+ *
  * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License v1.0 and Eclipse Distribution License v. 1.0
- * which accompanies this distribution.
- * The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
- * and the Eclipse Distribution License is available at
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0,
+ * or the Eclipse Distribution License v. 1.0 which is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
  *
- * Contributors:
- * Roman Grigoriadi
- ******************************************************************************/
+ * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
+ */
 
 package org.eclipse.yasson.defaultmapping.inheritance;
+
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.eclipse.yasson.Jsonbs.*;
 
 import org.eclipse.yasson.TestTypeToken;
 import org.eclipse.yasson.defaultmapping.generics.model.GenericTestClass;
@@ -23,18 +26,11 @@ import org.eclipse.yasson.defaultmapping.inheritance.model.generics.ExtendsExten
 import org.eclipse.yasson.defaultmapping.inheritance.model.generics.ExtendsPropagatedGenericClass;
 import org.eclipse.yasson.defaultmapping.inheritance.model.generics.ImplementsGenericInterfaces;
 import org.eclipse.yasson.defaultmapping.inheritance.model.generics.SecondLevelGeneric;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * Tests inheritance model marshalling / unmarshalling
@@ -45,13 +41,6 @@ import static org.junit.Assert.assertEquals;
  */
 public class InheritanceTest {
 
-    private Jsonb jsonb;
-
-    @Before
-    public void setUp() throws Exception {
-        jsonb = JsonbBuilder.create();
-    }
-
     @Test
     public void testBasicInheritance() throws Exception {
         SecondLevel secondLevel = new SecondLevel();
@@ -60,9 +49,9 @@ public class InheritanceTest {
         secondLevel.setInZeroOverriddenInFirst("IN_ZERO_OVERRIDDEN_IN_FIRST");
 
         String json = "{\"inZeroOverriddenInFirst\":\"IN_ZERO_OVERRIDDEN_IN_FIRST\",\"inFirstLevel\":\"IN_FIRST_LEVEL\",\"inSecondLevel\":\"IN_SECOND_LEVEL\"}";
-        assertEquals(json, jsonb.toJson(secondLevel));
+        assertEquals(json, defaultJsonb.toJson(secondLevel));
 
-        SecondLevel result = jsonb.fromJson(json, SecondLevel.class);
+        SecondLevel result = defaultJsonb.fromJson(json, SecondLevel.class);
         assertEquals("IN_FIRST_LEVEL", result.getInFirstLevel());
         assertEquals("IN_SECOND_LEVEL", result.getInSecondLevel());
         assertEquals("IN_ZERO_OVERRIDDEN_IN_FIRST", result.getInZeroOverriddenInFirst());
@@ -78,9 +67,9 @@ public class InheritanceTest {
         secondLevelGeneric.setInZero("IN_ZERO");
 
         String json = "{\"inZero\":\"IN_ZERO\",\"inFirstLevel\":255,\"inZeroOverriddenInFirst\":\"IN_ZERO_OVERRIDDEN_IN_FIRST\",\"inSecondLevel\":10}";
-        assertEquals(json, jsonb.toJson(secondLevelGeneric));
+        assertEquals(json, defaultJsonb.toJson(secondLevelGeneric));
 
-        SecondLevelGeneric<Number, Short, String> result = jsonb.fromJson(json, new TestTypeToken<SecondLevelGeneric<Number, Short, String>>(){}.getType());
+        SecondLevelGeneric<Number, Short, String> result = defaultJsonb.fromJson(json, new TestTypeToken<SecondLevelGeneric<Number, Short, String>>(){}.getType());
         assertEquals(BigDecimal.TEN, result.getInSecondLevel());
         assertEquals(Short.valueOf("255"), result.getInFirstLevel());
         assertEquals("IN_ZERO_OVERRIDDEN_IN_FIRST", result.getInZeroOverriddenInFirst());
@@ -89,7 +78,6 @@ public class InheritanceTest {
 
     @Test
     public void testPropagatedGenericInheritance() throws Exception {
-
         List<String> stringList = new ArrayList<>();
         stringList.add("first");
         stringList.add("second");
@@ -110,9 +98,9 @@ public class InheritanceTest {
         underTest.genericList = listWithGenerics;
 
         String json = "{\"genericList\":[{\"field1\":[\"first\",\"second\"],\"field2\":10}],\"genericTestClass\":{\"field1\":\"GENERIC_STRING\",\"field2\":1}}";
-        assertEquals(json, jsonb.toJson(underTest));
+        assertEquals(json, defaultJsonb.toJson(underTest));
 
-        ExtendsExtendsPropagatedGenericClass result = jsonb.fromJson(json, ExtendsExtendsPropagatedGenericClass.class);
+        ExtendsExtendsPropagatedGenericClass result = defaultJsonb.fromJson(json, ExtendsExtendsPropagatedGenericClass.class);
         assertEquals(GenericTestClass.class, result.genericList.get(0).getClass());
         assertEquals("first", result.genericList.get(0).field1.get(0));
         assertEquals("second", result.genericList.get(0).field1.get(1));
@@ -124,7 +112,6 @@ public class InheritanceTest {
 
     @Test
     public void testPropagatedGenericInheritance1() throws Exception {
-
         List<String> stringList = new ArrayList<>();
         stringList.add("first");
         stringList.add("second");
@@ -173,9 +160,9 @@ public class InheritanceTest {
         String json = "{\"inZero\":\"IN_ZERO\",\"inFirstLevel\":{\"genericList\":[{\"field1\":[\"third\",\"fourth\"],\"field2\":0}],\"genericTestClass\":{\"field1\":\"FIRST_LEVEL_GENERIC_STRING\",\"field2\":11}},\"inZeroOverriddenInFirst\":\"STRING_IN_ZERO_OVERRIDDEN_IN_FIRST\",\"inSecondLevel\":{\"genericList\":[{\"field1\":[\"first\",\"second\"],\"field2\":10}],\"genericTestClass\":{\"field1\":\"SECOND_LEVEL_GENERIC_STRING\",\"field2\":1}}}";
 
         final Type runtimeType = new TestTypeToken<SecondLevelGeneric<PropagatedGenericClass<String, BigDecimal>, ExtendsPropagatedGenericClass<String, BigDecimal>, String>>(){}.getType();
-        assertEquals(json, jsonb.toJson(secondLevelGeneric, runtimeType));
+        assertEquals(json, defaultJsonb.toJson(secondLevelGeneric, runtimeType));
         SecondLevelGeneric<PropagatedGenericClass<String, BigDecimal>, ExtendsPropagatedGenericClass<String, BigDecimal>, String> result =
-                jsonb.fromJson(json, runtimeType);
+        		defaultJsonb.fromJson(json, runtimeType);
 
         assertEquals("first", result.getInSecondLevel().genericList.get(0).field1.get(0));
         assertEquals("second", result.getInSecondLevel().genericList.get(0).field1.get(1));
@@ -195,16 +182,15 @@ public class InheritanceTest {
 
     @Test
     public void testInterfaceGenericInheritance() throws Exception {
-
         ImplementsGenericInterfaces<String, Integer> implementsGenericInterfaces = new ImplementsGenericInterfaces<>();
 
         implementsGenericInterfaces.setGenericValue("GENERIC_VALUE");
         implementsGenericInterfaces.setAnotherGenericValue(255);
 
         String json = "{\"anotherGenericValue\":255,\"genericValue\":\"GENERIC_VALUE\"}";
-        assertEquals(json, jsonb.toJson(implementsGenericInterfaces));
+        assertEquals(json, defaultJsonb.toJson(implementsGenericInterfaces));
 
-        ImplementsGenericInterfaces<String, Integer> result = jsonb.fromJson(json, new TestTypeToken<ImplementsGenericInterfaces<String, Integer>>(){}.getType());
+        ImplementsGenericInterfaces<String, Integer> result = defaultJsonb.fromJson(json, new TestTypeToken<ImplementsGenericInterfaces<String, Integer>>(){}.getType());
         assertEquals("GENERIC_VALUE", result.getGenericValue());
         assertEquals(Integer.valueOf(255), result.getAnotherGenericValue());
     }
@@ -214,17 +200,16 @@ public class InheritanceTest {
         PartialOverride partialOverride = new PartialOverride();
         partialOverride.setIntValue(5);
         partialOverride.setStrValue("abc");
-        String json = jsonb.toJson(partialOverride);
-        Assert.assertEquals("{\"intValue\":5,\"strValue\":\"abc\"}", json);
+        String json = defaultJsonb.toJson(partialOverride);
+        assertEquals("{\"intValue\":5,\"strValue\":\"abc\"}", json);
 
-        PartialOverride result = jsonb.fromJson("{\"intValue\":5,\"strValue\":\"abc\"}", PartialOverride.class);
-        Assert.assertEquals(5, result.getIntValue());
-        Assert.assertEquals("abc", result.getStrValue());
+        PartialOverride result = defaultJsonb.fromJson("{\"intValue\":5,\"strValue\":\"abc\"}", PartialOverride.class);
+        assertEquals(5, result.getIntValue());
+        assertEquals("abc", result.getStrValue());
     }
 
     @Test
     public void testPropOrderPartiallyOverriddenProperty() {
-
         PropertyOrderSecond pojo = new PropertyOrderSecond();
         pojo.setZero("ZERO");
         pojo.setZeroPartiallyOverriddenInFirst("ZERO_PARTIALLY_OVERRIDDEN_IN_FIRST");
@@ -232,9 +217,48 @@ public class InheritanceTest {
         pojo.setFirst("FIRST");
         pojo.setSecond("SECOND");
 
-        String result = jsonb.toJson(pojo);
-        Assert.assertEquals("{\"zero\":\"ZERO\",\"zeroPartiallyOverriddenInFirst\":\"ZERO_PARTIALLY_OVERRIDDEN_IN_FIRST\",\"first\":\"FIRST\",\"second\":\"SECOND\",\"zeroOverriddenInSecond\":\"ZERO_OVERRIDDEN_IN_SECOND\"}",
+        String result = defaultJsonb.toJson(pojo);
+        assertEquals("{\"zero\":\"ZERO\",\"zeroPartiallyOverriddenInFirst\":\"ZERO_PARTIALLY_OVERRIDDEN_IN_FIRST\",\"first\":\"FIRST\",\"second\":\"SECOND\",\"zeroOverriddenInSecond\":\"ZERO_OVERRIDDEN_IN_SECOND\"}",
                 result);
     }
 
+    @Test
+    public void testInheritanceSerialization() {
+        AnimalWrapper animalWrapper = new AnimalWrapper();
+        animalWrapper.animal = new Dog();
+        //Just initialize serializer cache for Animal and Dog
+        defaultJsonb.toJson(animalWrapper);
+
+        //Check if the Dog instance is dynamically resolved even though Dog serializer has been created before
+        DogWrapper dogWrapper = new DogWrapper();
+        dogWrapper.dog = new Dog();
+        assertEquals("{\"dog\":{\"isDog\":true}}", defaultJsonb.toJson(dogWrapper));
+        dogWrapper.dog = new SmallDog();
+        assertEquals("{\"dog\":{\"isDog\":true,\"isSmallDog\":true}}", defaultJsonb.toJson(dogWrapper));
+
+    }
+
+    public static class AnimalWrapper {
+
+        public Animal animal;
+
+    }
+
+    public static class DogWrapper {
+
+        public Dog dog;
+
+    }
+
+    public static class Animal {
+
+    }
+
+    public static class Dog extends Animal {
+        public boolean isDog = true;
+    }
+
+    public static class SmallDog extends Dog {
+        public boolean isSmallDog = true;
+    }
 }

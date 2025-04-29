@@ -1,40 +1,28 @@
-/*******************************************************************************
- * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2016, 2020 Oracle and/or its affiliates. All rights reserved.
+ *
  * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License v1.0 and Eclipse Distribution License v. 1.0
- * which accompanies this distribution.
- * The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
- * and the Eclipse Distribution License is available at
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0,
+ * or the Eclipse Distribution License v. 1.0 which is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
  *
- * Contributors:
- * Roman Grigoriadi
- ******************************************************************************/
+ * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
+ */
 
 package org.eclipse.yasson.customization.transients;
 
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.eclipse.yasson.Jsonbs.*;
+
 import org.eclipse.yasson.customization.transients.models.*;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
-import javax.json.bind.JsonbException;
-
-import static org.junit.Assert.*;
+import jakarta.json.bind.JsonbException;
 
 /**
  * @author Roman Grigoriadi
  */
 public class JsonbTransientTest {
-
-    private Jsonb jsonb;
-
-    @Before
-    public void setUp() throws Exception {
-        jsonb = JsonbBuilder.create();
-    }
 
     @Test
     public void testJsonbTransientPropertySerialize() {
@@ -48,12 +36,12 @@ public class JsonbTransientTest {
         pojo.setSetterAndGetterTransient("Setter and getter transient value");
         pojo.setSetterAndGetterAndPropertyTransient("Setter and getter and property transient value");
 
-        assertEquals("{\"plainProperty\":\"non transient\",\"setterTransient\":\"Setter transient value\"}", jsonb.toJson(pojo));
+        assertEquals("{\"plainProperty\":\"non transient\",\"setterTransient\":\"Setter transient value\"}", defaultJsonb.toJson(pojo));
     }
 
     @Test
     public void testJsonbTransientPropertyDeserialize() {
-        JsonbTransientValue result = jsonb.fromJson("{\"plainProperty\":\"plainProperty value\"," +
+        JsonbTransientValue result = defaultJsonb.fromJson("{\"plainProperty\":\"plainProperty value\"," +
                         "\"propertyTransient\":\"TRANSIENT\"," +
                         "\"getterTransient\":\"Getter transient value\"," +
                         "\"setterTransient\":\"Setter transient value\"," +
@@ -80,7 +68,7 @@ public class JsonbTransientTest {
         pojo.setTransientProperty("TRANSIENT");
 
         try {
-            jsonb.toJson(pojo);
+        	defaultJsonb.toJson(pojo);
             fail();
         } catch (JsonbException e) {
             assertTrue(e.getMessage().startsWith("JsonbTransient annotation cannot be used with other jsonb annotations on the same property."));
@@ -93,7 +81,7 @@ public class JsonbTransientTest {
         pojo.setTransientProperty("TRANSIENT");
 
         try {
-            jsonb.toJson(pojo);
+        	defaultJsonb.toJson(pojo);
             fail();
         } catch (JsonbException e) {
             assertTrue(e.getMessage().startsWith("JsonbTransient annotation cannot be used with other jsonb annotations on the same property."));
@@ -106,7 +94,7 @@ public class JsonbTransientTest {
         pojo.setTransientProperty("TRANSIENT");
 
         try {
-            jsonb.toJson(pojo);
+        	defaultJsonb.toJson(pojo);
             fail();
         } catch (JsonbException e) {
             assertTrue(e.getMessage().startsWith("JsonbTransient annotation cannot be used with other jsonb annotations on the same property."));
@@ -119,7 +107,7 @@ public class JsonbTransientTest {
         pojo.setTransientProperty("TRANSIENT");
 
         try {
-            jsonb.toJson(pojo);
+        	defaultJsonb.toJson(pojo);
             fail();
         } catch (JsonbException e) {
             assertTrue(e.getMessage().startsWith("JsonbTransient annotation cannot be used with other jsonb annotations on the same property."));
@@ -132,7 +120,7 @@ public class JsonbTransientTest {
         pojo.setTransientProperty("TRANSIENT");
 
         try {
-            jsonb.toJson(pojo);
+        	defaultJsonb.toJson(pojo);
             fail();
         } catch (JsonbException e) {
             assertTrue(e.getMessage().startsWith("JsonbTransient annotation cannot be used with other jsonb annotations on the same property."));
@@ -145,35 +133,38 @@ public class JsonbTransientTest {
         pojo.setTransientProperty("TRANSIENT");
 
         try {
-            jsonb.toJson(pojo);
+        	defaultJsonb.toJson(pojo);
             fail();
         } catch (JsonbException e) {
             assertTrue(e.getMessage().startsWith("JsonbTransient annotation cannot be used with other jsonb annotations on the same property."));
         }
     }
 
-    @Test(expected = JsonbException.class)
+    @Test
     public void testTransientGetterPlusJsonbPropertyField() {
-        TransientGetterPlusCustomizationAnnotatedFieldContainer pojo = new TransientGetterPlusCustomizationAnnotatedFieldContainer();
-        jsonb.toJson(pojo);
+    	assertThrows(JsonbException.class, () -> {
+	        TransientGetterPlusCustomizationAnnotatedFieldContainer pojo = new TransientGetterPlusCustomizationAnnotatedFieldContainer();
+	        defaultJsonb.toJson(pojo);
+    	});
     }
 
-    @Test(expected = JsonbException.class)
+    @Test
     public void testTransientSetterPlusJsonbPropertyField() {
-        TransientSetterPlusCustomizationAnnotatedFieldContainer pojo = new TransientSetterPlusCustomizationAnnotatedFieldContainer();
-        jsonb.toJson(pojo);
+    	assertThrows(JsonbException.class, () -> {
+	        TransientSetterPlusCustomizationAnnotatedFieldContainer pojo = new TransientSetterPlusCustomizationAnnotatedFieldContainer();
+	        defaultJsonb.toJson(pojo);
+    	});
     }
 
     @Test
     public void testTransientSetterplusJsonbPropertyGetter() {
         TransientSetterPlusCustomizationAnnotatedGetterContainer pojo = new TransientSetterPlusCustomizationAnnotatedGetterContainer();
-        String result = jsonb.toJson(pojo);
-        Assert.assertEquals("{\"instance\":\"INSTANCE\"}", result);
+        assertEquals("{\"instance\":\"INSTANCE\"}", defaultJsonb.toJson(pojo));
     }
 
     @Test
     public void testTransientGetterNoField() {
         TransientGetterNoField pojo = new TransientGetterNoField();
-        assertEquals("{}", jsonb.toJson(pojo));
+        assertEquals("{}", defaultJsonb.toJson(pojo));
     }
 }

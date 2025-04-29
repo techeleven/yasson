@@ -1,7 +1,21 @@
+/*
+ * Copyright (c) 2019, 2020 Oracle and/or its affiliates. All rights reserved.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0,
+ * or the Eclipse Distribution License v. 1.0 which is available at
+ * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
+ */
+
 package org.eclipse.yasson.internal;
 
-import javax.json.bind.annotation.JsonbCreator;
-import javax.json.bind.annotation.JsonbProperty;
+import org.junit.jupiter.api.*;
+
+import jakarta.json.bind.annotation.JsonbCreator;
+import jakarta.json.bind.annotation.JsonbProperty;
 
 import java.beans.ConstructorProperties;
 import java.lang.reflect.Constructor;
@@ -11,9 +25,7 @@ import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Ignore;
-
-@Ignore
+@Disabled
 class AnnotationIntrospectorTestFixtures {
 
     public static interface ProvidesParameterRepresentation {
@@ -43,10 +55,7 @@ class AnnotationIntrospectorTestFixtures {
             return new ObjectWithoutAnnotatedConstructor("a string", Long.MAX_VALUE);
         }
 
-        @JsonbCreator
-        public ObjectWithoutAnnotatedConstructor( //
-                @JsonbProperty("string") String aString, //
-                @JsonbProperty("primitive") long aPrimitive) {
+        public ObjectWithoutAnnotatedConstructor(String aString, long aPrimitive) {
             this.string = aString;
             this.primitive = aPrimitive;
         }
@@ -90,6 +99,88 @@ class AnnotationIntrospectorTestFixtures {
         @Override
         public String toString() {
             return "ObjectWithJsonbCreatorAnnotatedConstructor [string=" + string + ", primitive=" + primitive + "]";
+        }
+    }
+
+    public static class ObjectWithJsonbCreatorAnnotatedProtectedConstructor implements ProvidesParameterRepresentation {
+        private final String string;
+        private final long primitive;
+
+        public static final Map<String, Type> parameters() {
+            return twoParameters("string", String.class, "primitive", long.class);
+        }
+
+        public static final ProvidesParameterRepresentation example() {
+            return new ObjectWithJsonbCreatorAnnotatedProtectedConstructor("a string", Long.MAX_VALUE);
+        }
+
+        @JsonbCreator
+        protected ObjectWithJsonbCreatorAnnotatedProtectedConstructor( //
+                @JsonbProperty("string") String aString, //
+                @JsonbProperty("primitive") long aPrimitive) {
+            this.string = aString;
+            this.primitive = aPrimitive;
+        }
+
+        @Override
+        public Object[] asParameters() {
+            return new Object[] { string, primitive };
+        }
+
+        @Override
+        public String toString() {
+            return "ObjectWithJsonbCreatorAnnotatedProtectedConstructor [string=" + string + ", primitive=" + primitive + "]";
+        }
+    }
+
+    public static class ObjectWithNoArgAndJsonbCreatorAnnotatedProtectedConstructor implements ProvidesParameterRepresentation {
+        private String string;
+        private long primitive;
+
+        public static final Map<String, Type> parameters() {
+            return twoParameters("string", String.class, "primitive", long.class);
+        }
+
+        public static final ProvidesParameterRepresentation example() {
+            return new ObjectWithNoArgAndJsonbCreatorAnnotatedProtectedConstructor("a string", Long.MAX_VALUE);
+        }
+
+        public ObjectWithNoArgAndJsonbCreatorAnnotatedProtectedConstructor() {
+            super();
+        }
+
+        @JsonbCreator
+        protected ObjectWithNoArgAndJsonbCreatorAnnotatedProtectedConstructor( //
+                @JsonbProperty("string") String aString, //
+                @JsonbProperty("primitive") long aPrimitive) {
+            this.string = aString;
+            this.primitive = aPrimitive;
+        }
+
+        public String getString() {
+            return string;
+        }
+
+        public void setString(String string) {
+            this.string = string;
+        }
+
+        public long getPrimitive() {
+            return primitive;
+        }
+
+        public void setPrimitive(long primitive) {
+            this.primitive = primitive;
+        }
+
+        @Override
+        public Object[] asParameters() {
+            return new Object[] { string, primitive };
+        }
+
+        @Override
+        public String toString() {
+            return "ObjectWithNoArgAndJsonbCreatorAnnotatedProtectedConstructor [string=" + string + ", primitive=" + primitive + "]";
         }
     }
 
@@ -252,6 +343,161 @@ class AnnotationIntrospectorTestFixtures {
         public ObjectWithJsonbCreatorAndConstructorPropertiesAnnotation(String aString, long aPrimitive) {
             this.string = aString;
             this.primitive = aPrimitive;
+        }
+
+        @Override
+        public Object[] asParameters() {
+            return new Object[] { string, primitive };
+        }
+
+        @Override
+        public String toString() {
+            return "ObjectWithJsonbCreatorAndConstructorPropertiesAnnotation [string=" + string + ", primitive=" + primitive + "]";
+        }
+    }
+
+    public static class ObjectWithPublicNoArgAndAnnotatedPrivateConstructor implements ProvidesParameterRepresentation {
+        private String string;
+        private Long primitive;
+
+        public static final Map<String, Type> parameters() {
+            return twoParameters("string", String.class, "primitive", long.class);
+        }
+
+        public static final ProvidesParameterRepresentation example() {
+            return new ObjectWithPublicNoArgAndAnnotatedPrivateConstructor("  ", Long.valueOf(-12));
+        }
+
+        public ObjectWithPublicNoArgAndAnnotatedPrivateConstructor() {
+            super();
+        }
+
+        @ConstructorProperties({ "string", "primitive" })
+        private ObjectWithPublicNoArgAndAnnotatedPrivateConstructor(String aString, long aPrimitive) {
+            this.string = aString;
+            this.primitive = aPrimitive;
+        }
+
+        public Long getPrimitive() {
+            return primitive;
+        }
+
+        public void setPrimitive(Long primitive) {
+            this.primitive = primitive;
+        }
+
+        public String getString() {
+            return string;
+        }
+
+        public void setString(String string) {
+            this.string = string;
+        }
+
+        @Override
+        public Object[] asParameters() {
+            return new Object[] { string, primitive };
+        }
+
+        @Override
+        public String toString() {
+            return "ObjectWithPublicNoArgAndAnnotatedPrivateConstructor [string=" + string + ", primitive=" + primitive + "]";
+        }
+    }
+
+    public static class ObjectWithPublicNoArgAndAnnotatedPackageProtectedConstructor implements ProvidesParameterRepresentation {
+        private String string;
+        private Long primitive;
+
+        public static final Map<String, Type> parameters() {
+            return twoParameters("string", String.class, "primitive", long.class);
+        }
+
+        public static final ProvidesParameterRepresentation example() {
+            return new ObjectWithPublicNoArgAndAnnotatedPackageProtectedConstructor("  ", Long.valueOf(-12));
+        }
+
+        public static final ObjectWithPublicNoArgAndAnnotatedPackageProtectedConstructor create(String aString, long aPrimitive) {
+            return new ObjectWithPublicNoArgAndAnnotatedPackageProtectedConstructor(aString, aPrimitive);
+        }
+
+        public ObjectWithPublicNoArgAndAnnotatedPackageProtectedConstructor() {
+            super();
+        }
+
+        @ConstructorProperties({ "string", "primitive" })
+        ObjectWithPublicNoArgAndAnnotatedPackageProtectedConstructor(String aString, long aPrimitive) {
+            this.string = aString;
+            this.primitive = aPrimitive;
+        }
+
+        public Long getPrimitive() {
+            return primitive;
+        }
+
+        public void setPrimitive(Long primitive) {
+            this.primitive = primitive;
+        }
+
+        public String getString() {
+            return string;
+        }
+
+        public void setString(String string) {
+            this.string = string;
+        }
+
+        @Override
+        public Object[] asParameters() {
+            return new Object[] { string, primitive };
+        }
+
+        @Override
+        public String toString() {
+            return "ObjectWithPublicNoArgAndAnnotatedPackageProtectedConstructor [string=" + string + ", primitive=" + primitive + "]";
+        }
+    }
+
+    public static class ObjectWithPublicNoArgAndAnnotatedProtectedConstructor implements ProvidesParameterRepresentation {
+        private String string;
+        private Long primitive;
+
+        public static final Map<String, Type> parameters() {
+            return twoParameters("string", String.class, "primitive", long.class);
+        }
+
+        public static final ProvidesParameterRepresentation example() {
+            return new ObjectWithPublicNoArgAndAnnotatedPackageProtectedConstructor("  ", Long.valueOf(-12));
+        }
+
+        public static final ObjectWithPublicNoArgAndAnnotatedProtectedConstructor create(String aString, long aPrimitive) {
+            return new ObjectWithPublicNoArgAndAnnotatedProtectedConstructor(aString, aPrimitive);
+        }
+
+        @ConstructorProperties({ "string", "primitive" })
+        protected ObjectWithPublicNoArgAndAnnotatedProtectedConstructor(String aString, long aPrimitive) {
+            this.string = aString;
+            this.primitive = aPrimitive;
+        }
+
+        public ObjectWithPublicNoArgAndAnnotatedProtectedConstructor() {
+            super();
+        }
+
+        public Long getPrimitive() {
+            return primitive;
+        }
+
+        public void setPrimitive(Long primitive) {
+            this.primitive = primitive;
+        }
+
+        public String getString() {
+            return string;
+        }
+
+        public void setString(String string) {
+            this.string = string;
         }
 
         @Override

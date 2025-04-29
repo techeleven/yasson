@@ -1,29 +1,40 @@
-/*******************************************************************************
- * Copyright (c) 2015 Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2015, 2022 Oracle and/or its affiliates. All rights reserved.
+ *
  * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License v1.0 and Eclipse Distribution License v. 1.0
- * which accompanies this distribution.
- * The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
- * and the Eclipse Distribution License is available at
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0,
+ * or the Eclipse Distribution License v. 1.0 which is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
  *
- * Contributors:
- *     Dmitry Kornilov - initial implementation
- ******************************************************************************/
+ * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
+ */
+
 package org.eclipse.yasson.defaultmapping.jsonp;
 
-import org.eclipse.yasson.defaultmapping.jsonp.model.JsonpPojo;
-import org.junit.Assert;
-import org.junit.Test;
-
-import javax.json.*;
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
-import javax.json.bind.JsonbConfig;
-import javax.json.spi.JsonProvider;
 import java.math.BigDecimal;
 
-import static org.junit.Assert.assertEquals;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonBuilderFactory;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonString;
+import jakarta.json.JsonValue;
+import jakarta.json.bind.Jsonb;
+import jakarta.json.bind.JsonbBuilder;
+import jakarta.json.bind.JsonbConfig;
+import jakarta.json.spi.JsonProvider;
+import org.eclipse.yasson.defaultmapping.jsonp.model.JsonpPojo;
+import org.junit.jupiter.api.Test;
+
+import static org.eclipse.yasson.Jsonbs.defaultJsonb;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Default mapping JSONP integration tests.
@@ -31,8 +42,6 @@ import static org.junit.Assert.assertEquals;
  * @author Dmitry Kornilov
  */
 public class JsonpTest {
-
-    private Jsonb jsonb = JsonbBuilder.create();
 
     public static class JsonValueWrapper {
         public JsonValue jsonValue;
@@ -47,7 +56,7 @@ public class JsonpTest {
 
     @Test
     public void testInnerJsonObject() {
-        
+
         final JsonBuilderFactory factory = Json.createBuilderFactory(null);
         final JsonObject jsonObject = factory.createObjectBuilder()
                 .add("name", "home")
@@ -67,40 +76,40 @@ public class JsonpTest {
         final JsonObject wrapper = wrapperBuilder.build();
 
         String expected = "{\"f1\":\"abc\",\"cust\":{\"f1\":\"abc123\",\"f2\":10,\"f3\":12,\"city\":{\"name\":\"home\",\"city\":\"Prague\"}}}";
-        assertEquals(expected, jsonb.toJson(wrapper));
+        assertEquals(expected, defaultJsonb.toJson(wrapper));
 
-        JsonObject result = jsonb.fromJson(expected, JsonObject.class);
-        Assert.assertEquals("home", result.getJsonObject("cust").getJsonObject("city").getString("name"));
-        Assert.assertEquals("abc123", result.getJsonObject("cust").getString("f1"));
-        Assert.assertEquals("abc123", result.getJsonObject("cust").getString("f1"));
+        JsonObject result = defaultJsonb.fromJson(expected, JsonObject.class);
+        assertEquals("home", result.getJsonObject("cust").getJsonObject("city").getString("name"));
+        assertEquals("abc123", result.getJsonObject("cust").getString("f1"));
+        assertEquals("abc123", result.getJsonObject("cust").getString("f1"));
 
     }
 
     @Test
     public void testMarshallJsonArray() {
-        
+
         final JsonBuilderFactory factory = Json.createBuilderFactory(null);
         final JsonArray jsonArray = factory.createArrayBuilder()
                 .add(1)
                 .add(2)
                 .build();
 
-        assertEquals("{\"jsonValue\":[1,2]}", jsonb.toJson(new JsonValueWrapper(jsonArray)));
+        assertEquals("{\"jsonValue\":[1,2]}", defaultJsonb.toJson(new JsonValueWrapper(jsonArray)));
     }
 
     @Test
     public void testMarshallJsonValue() {
-        assertEquals("{\"jsonValue\":true}", jsonb.toJson(new JsonValueWrapper(JsonValue.TRUE)));
+        assertEquals("{\"jsonValue\":true}", defaultJsonb.toJson(new JsonValueWrapper(JsonValue.TRUE)));
     }
 
     @Test
     public void testMarshallJsonNumber() {
-                assertEquals("{\"jsonValue\":10}", jsonb.toJson(new JsonValueWrapper(new JsonpLong(10))));
+                assertEquals("{\"jsonValue\":10}", defaultJsonb.toJson(new JsonValueWrapper(new JsonpLong(10))));
     }
 
     @Test
     public void testMarshallJsonString() {
-                assertEquals("{\"jsonValue\":\"hello\"}", jsonb.toJson(new JsonValueWrapper(new JsonpString("hello"))));
+                assertEquals("{\"jsonValue\":\"hello\"}", defaultJsonb.toJson(new JsonValueWrapper(new JsonpString("hello"))));
     }
 
     @Test
@@ -159,9 +168,9 @@ public class JsonpTest {
         JsonObject object = objBuilder.build();
 
         String expected = "{\"boolTrue\":true,\"boolFalse\":false,\"null\":null,\"str\":\"String\",\"array\":[11,false,10]}";
-        assertEquals(expected, jsonb.toJson(object));
+        assertEquals(expected, defaultJsonb.toJson(object));
 
-        JsonObject result = jsonb.fromJson(expected, JsonObject.class);
+        JsonObject result = defaultJsonb.fromJson(expected, JsonObject.class);
 
         assertEquals(object, result);
     }
@@ -181,28 +190,28 @@ public class JsonpTest {
         JsonArray arr = arrBuilder.build();
 
         String expected = "[11,false,10,{\"boolTrue\":true,\"boolFalse\":false,\"null\":null,\"str\":\"String\"}]";
-        assertEquals(expected, jsonb.toJson(arr));
+        assertEquals(expected, defaultJsonb.toJson(arr));
 
-        JsonArray result = jsonb.fromJson(expected, JsonArray.class);
+        JsonArray result = defaultJsonb.fromJson(expected, JsonArray.class);
 
         assertEquals(arr, result);
     }
 
     @Test
     public void testJsonObjectAsValue() {
-        final JsonValueWrapper jsonValueWrapper = jsonb.fromJson("{ \"jsonValue\" : { \"stringInstance\" : \"Test String\" } }", JsonValueWrapper.class);
+        final JsonValueWrapper jsonValueWrapper = defaultJsonb.fromJson("{ \"jsonValue\" : { \"stringInstance\" : \"Test String\" } }", JsonValueWrapper.class);
         assertEquals("Test String", ((JsonObject) jsonValueWrapper.jsonValue).getString("stringInstance"));
     }
 
     @Test
     public void testJsonValueString() {
         JsonValueWrapper pojo = new JsonValueWrapper(Json.createValue("abc"));
-        String json = jsonb.toJson(pojo);
-        Assert.assertEquals("{\"jsonValue\":\"abc\"}", json);
+        String json = defaultJsonb.toJson(pojo);
+        assertEquals("{\"jsonValue\":\"abc\"}", json);
 
-        JsonValueWrapper result = jsonb.fromJson("{\"jsonValue\":\"def\"}", JsonValueWrapper.class);
-        Assert.assertTrue(result.jsonValue instanceof  JsonString);
-        Assert.assertEquals("def", ((JsonString)result.jsonValue).getString());
+        JsonValueWrapper result = defaultJsonb.fromJson("{\"jsonValue\":\"def\"}", JsonValueWrapper.class);
+        assertTrue(result.jsonValue instanceof  JsonString);
+        assertEquals("def", ((JsonString)result.jsonValue).getString());
     }
 
     @Test
@@ -213,14 +222,14 @@ public class JsonpTest {
                 .build();
         JsonValueWrapper pojo = new JsonValueWrapper(build);
         String expected = "{\"jsonValue\":{\"prop1\":\"val1\",\"prop2\":\"val2\",\"innerObj1\":{\"inner1\":\"innerVal1\"}}}";
-        String json = jsonb.toJson(pojo);
-        Assert.assertEquals(expected, json);
+        String json = defaultJsonb.toJson(pojo);
+        assertEquals(expected, json);
 
-        JsonValueWrapper result = jsonb.fromJson(expected, JsonValueWrapper.class);
-        Assert.assertTrue(result.jsonValue instanceof JsonObject);
+        JsonValueWrapper result = defaultJsonb.fromJson(expected, JsonValueWrapper.class);
+        assertTrue(result.jsonValue instanceof JsonObject);
         JsonObject jsonObject = (JsonObject) result.jsonValue;
-        Assert.assertEquals("val1", jsonObject.getString("prop1"));
-        Assert.assertEquals("innerVal1", jsonObject.getJsonObject("innerObj1").getString("inner1"));
+        assertEquals("val1", jsonObject.getString("prop1"));
+        assertEquals("innerVal1", jsonObject.getJsonObject("innerObj1").getString("inner1"));
     }
 
     @Test
@@ -228,16 +237,46 @@ public class JsonpTest {
         JsonArray jsonArray = Json.createArrayBuilder().add(1).add(2).add(3).add(Json.createObjectBuilder().add("a","b").build()).build();
         JsonValueWrapper pojo = new JsonValueWrapper(jsonArray);
         String expected = "{\"jsonValue\":[1,2,3,{\"a\":\"b\"}]}";
-        String json = jsonb.toJson(pojo);
-        Assert.assertEquals(expected, json);
+        String json = defaultJsonb.toJson(pojo);
+        assertEquals(expected, json);
 
-        JsonValueWrapper result = jsonb.fromJson(expected, JsonValueWrapper.class);
-        Assert.assertTrue(result.jsonValue instanceof JsonArray);
+        JsonValueWrapper result = defaultJsonb.fromJson(expected, JsonValueWrapper.class);
+        assertTrue(result.jsonValue instanceof JsonArray);
         JsonArray resultArray = (JsonArray) result.jsonValue;
-        Assert.assertEquals(1, resultArray.getInt(0));
-        Assert.assertEquals(2, resultArray.getInt(1));
-        Assert.assertEquals(3, resultArray.getInt(2));
-        Assert.assertEquals("b", resultArray.getJsonObject(3).getString("a"));
+        assertEquals(1, resultArray.getInt(0));
+        assertEquals(2, resultArray.getInt(1));
+        assertEquals(3, resultArray.getInt(2));
+        assertEquals("b", resultArray.getJsonObject(3).getString("a"));
 
+    }
+
+    @Test
+    public void testJsonNullValue() {
+        JsonValueWrapper pojo = new JsonValueWrapper(null);
+        String expected = "{}";
+        String json = defaultJsonb.toJson(pojo);
+        assertThat(json, is(expected));
+        JsonValueWrapper deserialized = defaultJsonb.fromJson(expected, JsonValueWrapper.class);
+        assertThat(deserialized.jsonValue, nullValue());
+        deserialized = defaultJsonb.fromJson("{\"jsonValue\":null}", JsonValueWrapper.class);
+        assertThat(deserialized.jsonValue, is(JsonValue.NULL));
+    }
+
+    @Test
+    public void testJsonpNullValues() {
+        JsonpPojo pojo = new JsonpPojo();
+        String expected = "{}";
+        String nullValues = "{\"jsonObject\":null, \"jsonArray\":null, \"jsonNumber\":null, \"jsonString\":null, "
+                + "\"jsonValue\":null }";
+        String json = defaultJsonb.toJson(pojo);
+        assertThat(json, is(expected));
+        JsonpPojo deserialized = defaultJsonb.fromJson(expected, JsonpPojo.class);
+        assertThat(deserialized.jsonObject, nullValue());
+        deserialized = defaultJsonb.fromJson(nullValues, JsonpPojo.class);
+        assertThat(deserialized.jsonObject, nullValue());
+        assertThat(deserialized.jsonArray, nullValue());
+        assertThat(deserialized.jsonNumber, nullValue());
+        assertThat(deserialized.jsonString, nullValue());
+        assertThat(deserialized.jsonValue, is(JsonValue.NULL));
     }
 }

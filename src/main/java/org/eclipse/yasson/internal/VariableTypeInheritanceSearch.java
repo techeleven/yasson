@@ -1,38 +1,38 @@
-/*******************************************************************************
- * Copyright (c) 2015 Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2015, 2022 Oracle and/or its affiliates. All rights reserved.
+ *
  * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License v1.0 and Eclipse Distribution License v. 1.0
- * which accompanies this distribution.
- * The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
- * and the Eclipse Distribution License is available at
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0,
+ * or the Eclipse Distribution License v. 1.0 which is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
  *
- * Contributors:
- * Roman Grigoriadi
- ******************************************************************************/
+ * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
+ */
 
 package org.eclipse.yasson.internal;
+
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.util.ArrayDeque;
+import java.util.Deque;
+
+import jakarta.json.bind.JsonbException;
 
 import org.eclipse.yasson.internal.properties.MessageKeys;
 import org.eclipse.yasson.internal.properties.Messages;
 
-import javax.json.bind.JsonbException;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
-import java.util.Stack;
-
 /**
  * Search for type variable in inheritance hierarchy and resolve if possible.
- *
- * @author Roman Grigoriadi
  */
-public class VariableTypeInheritanceSearch {
+class VariableTypeInheritanceSearch {
 
-    private final Stack<ParameterizedType> parameterizedSubclasses = new Stack<>();
+    private final Deque<ParameterizedType> parameterizedSubclasses = new ArrayDeque<>();
 
     /**
-     * Searches the hierarchy of classes to resolve a type variable. If typevar resolved value is another typevar redirection (propagated from wrapping class),
+     * Searches the hierarchy of classes to resolve a type variable. If typevar resolved value is another typevar redirection
+     * (propagated from wrapping class),
      * this typevar is returned.
      *
      * <pre>
@@ -73,7 +73,7 @@ public class VariableTypeInheritanceSearch {
      * @param typeVar      type variable to resolve, not null
      * @return resolved runtime type, or type variable
      */
-    public Type searchParametrizedType(Type typeToSearch, TypeVariable<?> typeVar) {
+    Type searchParametrizedType(Type typeToSearch, TypeVariable<?> typeVar) {
         ParameterizedType parameterizedType = findParameterizedSuperclass(typeToSearch);
         if (parameterizedType == null) {
             return null;

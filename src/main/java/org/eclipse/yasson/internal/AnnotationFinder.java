@@ -1,7 +1,16 @@
-package org.eclipse.yasson.internal;
+/*
+ * Copyright (c) 2016, 2020 Oracle and/or its affiliates. All rights reserved.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0,
+ * or the Eclipse Distribution License v. 1.0 which is available at
+ * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
+ */
 
-import org.eclipse.yasson.internal.properties.MessageKeys;
-import org.eclipse.yasson.internal.properties.Messages;
+package org.eclipse.yasson.internal;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
@@ -12,10 +21,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import org.eclipse.yasson.internal.properties.MessageKeys;
+import org.eclipse.yasson.internal.properties.Messages;
+
 /**
  * Finds an annotation including inherited annotations (e.g. meta-annotations).
- * 
- * @author JohT
  */
 class AnnotationFinder {
 
@@ -27,30 +37,30 @@ class AnnotationFinder {
 
     /**
      * Gets the {@link AnnotationFinder} for the given Annotation-Type.
-     * 
+     *
      * @param annotation {@link Class}, that is a sub-type of {@link Annotation}
      * @return {@link AnnotationFinder}
      */
-    public static final AnnotationFinder findAnnotation(Class<?> annotation) {
+    public static AnnotationFinder findAnnotation(Class<?> annotation) {
         return findAnnotationByName(annotation.getName());
     }
 
     /**
      * Gets the {@link AnnotationFinder} for the given Annotation-Type Name.
-     * 
+     *
      * @param annotationClassName {@link String}, that is a sub-type of {@link Annotation}
      * @return {@link AnnotationFinder}
      */
-    public static final AnnotationFinder findAnnotationByName(String annotationClassName) {
+    public static AnnotationFinder findAnnotationByName(String annotationClassName) {
         return new AnnotationFinder(annotationClassName, getOptionalAnnotationClass(annotationClassName));
     }
 
     /**
      * Gets the {@link AnnotationFinder} for @ConstructorProperties-Annotation.
-     * 
+     *
      * @return {@link AnnotationFinder}
      */
-    public static final AnnotationFinder findConstructorProperties() {
+    public static AnnotationFinder findConstructorProperties() {
         return findAnnotationByName(CONSTRUCTOR_PROPERTIES_ANNOTATION);
     }
 
@@ -70,7 +80,7 @@ class AnnotationFinder {
     /**
      * Looks for the annotation {@link #in(Annotation[])} <br>
      * and executes the "value" Method of it dynamically.
-     * 
+     *
      * @param annotations - Array of {@link Annotation}n.
      * @return {@link Object}
      */
@@ -85,7 +95,8 @@ class AnnotationFinder {
         try {
             return annotation.annotationType().getMethod("value").invoke(annotation);
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-            String message = Messages.getMessage(MessageKeys.MISSING_VALUE_PROPERTY_IN_ANNOTATION, annotation.annotationType().getName());
+            String message = Messages
+                    .getMessage(MessageKeys.MISSING_VALUE_PROPERTY_IN_ANNOTATION, annotation.annotationType().getName());
             LOGGER.finest(message);
             return null;
         }
@@ -107,7 +118,9 @@ class AnnotationFinder {
      */
     // "static" to use it in a hybrid procedural and object oriented manner.
     @SuppressWarnings("unchecked")
-    public static <T extends Annotation> T findAnnotation(Annotation[] declaredAnnotations, Class<T> annotationClass, Set<Annotation> processed) {
+    public static <T extends Annotation> T findAnnotation(Annotation[] declaredAnnotations,
+                                                          Class<T> annotationClass,
+                                                          Set<Annotation> processed) {
         for (Annotation candidate : declaredAnnotations) {
             final Class<? extends Annotation> annType = candidate.annotationType();
             if (annType.equals(annotationClass)) {
@@ -117,7 +130,9 @@ class AnnotationFinder {
             final List<Annotation> inheritedAnnotations = new ArrayList<>(Arrays.asList(annType.getDeclaredAnnotations()));
             inheritedAnnotations.removeAll(processed);
             if (inheritedAnnotations.size() > 0) {
-                final T inherited = findAnnotation(inheritedAnnotations.toArray(new Annotation[inheritedAnnotations.size()]), annotationClass, processed);
+                final T inherited = findAnnotation(inheritedAnnotations.toArray(new Annotation[inheritedAnnotations.size()]),
+                                                   annotationClass,
+                                                   processed);
                 if (inherited != null) {
                     return inherited;
                 }

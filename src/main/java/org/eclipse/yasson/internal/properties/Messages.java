@@ -1,15 +1,15 @@
-/*******************************************************************************
- * Copyright (c) 2015, 2017 Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2015, 2020 Oracle and/or its affiliates. All rights reserved.
+ *
  * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License v1.0 and Eclipse Distribution License v. 1.0
- * which accompanies this distribution.
- * The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
- * and the Eclipse Distribution License is available at
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0,
+ * or the Eclipse Distribution License v. 1.0 which is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
  *
- * Contributors:
- *     David Kral - initial implementation
- ******************************************************************************/
+ * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
+ */
+
 package org.eclipse.yasson.internal.properties;
 
 import java.io.IOException;
@@ -24,13 +24,11 @@ import java.util.ResourceBundle;
 
 /**
  * JSON-B messages.
- *
- * @author David Kral
  */
 public class Messages {
 
-    private final static String MESSAGE_BUNDLE = "yasson-messages";
-    private final static String ENCODING = "UTF-8";
+    private static final String MESSAGE_BUNDLE = "yasson-messages";
+    private static final String ENCODING = "UTF-8";
 
     private Messages() {
     }
@@ -38,7 +36,7 @@ public class Messages {
     /**
      * Gets message by key. Default locale is used.
      *
-     * @param key Message key.
+     * @param key     Message key.
      * @param objects Message parameters.
      * @return Formatted message in string.
      */
@@ -49,14 +47,14 @@ public class Messages {
     /**
      * Gets message by key and locale.
      *
-     * @param key Message key.
-     * @param locale Locale.
+     * @param key     Message key.
+     * @param locale  Locale.
      * @param objects Message parameters.
      * @return Formatted message in string.
      */
     public static String getMessage(MessageKeys key, Locale locale, Object... objects) {
         ResourceBundle messages = getResourceBundle(locale);
-        MessageFormat formatter = new MessageFormat(messages.getString(key.key));
+        MessageFormat formatter = new MessageFormat(messages.getString(key.getKey()));
         return formatter.format(objects);
     }
 
@@ -72,10 +70,8 @@ public class Messages {
     }
 
     static class UTF8Control extends ResourceBundle.Control {
-        public ResourceBundle newBundle
-                (String baseName, Locale locale, String format, ClassLoader loader, boolean reload)
-                throws IllegalAccessException, InstantiationException, IOException
-        {
+        public ResourceBundle newBundle(String baseName, Locale locale, String format, ClassLoader loader, boolean reload)
+                throws IllegalAccessException, InstantiationException, IOException {
             // The below is a copy of the default implementation.
             String bundleName = toBundleName(baseName, locale);
             String resourceName = toResourceName(bundleName, "properties");

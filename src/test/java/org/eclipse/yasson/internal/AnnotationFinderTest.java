@@ -1,12 +1,23 @@
+/*
+ * Copyright (c) 2019, 2020 Oracle and/or its affiliates. All rights reserved.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0,
+ * or the Eclipse Distribution License v. 1.0 which is available at
+ * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
+ */
+
 package org.eclipse.yasson.internal;
+
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import static org.eclipse.yasson.internal.AnnotationFinderTestFixtures.TESTVALUE;
 import static org.eclipse.yasson.internal.AnnotationFinderTestFixtures.getConstructorAnnotationsOf;
 import static org.eclipse.yasson.internal.AnnotationFinderTestFixtures.getMethodAnnotationsOf;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 import org.eclipse.yasson.internal.AnnotationFinderTestFixtures.AnnotationAnnotatedWithDeprecated;
 import org.eclipse.yasson.internal.AnnotationFinderTestFixtures.AnnotationWithoutValueProperty;
@@ -19,8 +30,6 @@ import org.eclipse.yasson.internal.AnnotationFinderTestFixtures.ObjectWithInheri
 import org.eclipse.yasson.internal.AnnotationFinderTestFixtures.ObjectWithInheritedDeprecatedMethod;
 import org.eclipse.yasson.internal.AnnotationFinderTestFixtures.ObjectWithMissingValuePropertyAnnotation;
 import org.eclipse.yasson.internal.AnnotationFinderTestFixtures.ObjectWithNoAnnotations;
-
-import org.junit.Test;
 
 public class AnnotationFinderTest {
 

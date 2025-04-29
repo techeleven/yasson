@@ -1,15 +1,31 @@
+/*
+ * Copyright (c) 2016, 2021 Oracle and/or its affiliates. All rights reserved.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0,
+ * or the Eclipse Distribution License v. 1.0 which is available at
+ * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
+ */
+
 package org.eclipse.yasson.defaultmapping.basic;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
+import java.net.URI;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Objects;
 
-import javax.json.bind.JsonbBuilder;
-
+import jakarta.json.bind.annotation.JsonbProperty;
+import jakarta.json.bind.annotation.JsonbTransient;
 import org.jboss.weld.exceptions.IllegalStateException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.eclipse.yasson.Jsonbs.defaultJsonb;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Tests to verify that read-only properties (properties with no field or setter)
@@ -86,7 +102,7 @@ public class PropertyMismatchTest {
                                  "\"dataMap\": { \"foo\": \"bar\" }, " +
                                  "\"dataArray\": [\"foo\"], " +
                                  "\"data\": \"foo\" }";
-        CollectionGetterOnly collection = JsonbBuilder.create().fromJson(jsonCollection, CollectionGetterOnly.class);
+        CollectionGetterOnly collection = defaultJsonb.fromJson(jsonCollection, CollectionGetterOnly.class);
         // Don't need to verify resulting object (except that it is non-null)
         // because if any getters or ctors were called, we would get an ISE
         assertNotNull(collection);
@@ -98,7 +114,98 @@ public class PropertyMismatchTest {
     @Test
     public void testSetterOnly() {
         CollectionSetterOnly obj = new CollectionSetterOnly();
-        String json = JsonbBuilder.create().toJson(obj);
+        String json = defaultJsonb.toJson(obj);
         assertEquals("{}", json);
+    }
+    
+    public static class PropertyTypeMismatch {
+        @JsonbTransient
+        public Instant internalInstantProperty;
+        
+        private String foo;
+        public int getFoo() {
+            return foo.length();
+        }
+        public void setFoo(Instant instant) {
+            this.foo = instant.toString();
+            this.internalInstantProperty = instant;
+        }
+    }
+
+    @Test
+    public void testTransientAndPropertyAnnotationMerge() {
+        TransientAndPropertyAnnotationMerge object = new TransientAndPropertyAnnotationMerge();
+        String expected = "{\"number\":\"http://localhost/\"}";
+        String json = defaultJsonb.toJson(object);
+        assertEquals(expected, json);
+        TransientAndPropertyAnnotationMerge deserialized = defaultJsonb.fromJson(expected,
+                                                                                 TransientAndPropertyAnnotationMerge.class);
+        assertEquals(object, deserialized);
+    }
+
+    public static class TransientAndPropertyAnnotationMerge {
+
+        @JsonbTransient
+        private Integer number;
+
+        @JsonbProperty("number")
+        private URI someLink;
+
+        public TransientAndPropertyAnnotationMerge() {
+            number = -1;
+            someLink = URI.create("http://localhost/");
+        }
+
+        public Integer getNumber() {
+            return number;
+        }
+
+        public void setNumber(Integer number) {
+            this.number = number;
+        }
+
+        public URI getSomeLink() {
+            return someLink;
+        }
+
+        public void setSomeLink(URI someLink) {
+            this.someLink = someLink;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            TransientAndPropertyAnnotationMerge that = (TransientAndPropertyAnnotationMerge) o;
+            return Objects.equals(number, that.number) && Objects.equals(someLink, that.someLink);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(number, someLink);
+        }
+    }
+
+    /**
+     * Test that properties of the same name with different
+     * field/getter/setter types behave properly and that we don't
+     * assume they are all equal
+     */
+    @Test
+    public void testPropertyTypesMismatch() {
+        PropertyTypeMismatch obj = new PropertyTypeMismatch();
+        Instant now = Instant.now();
+        obj.setFoo(now);
+        
+        String json = defaultJsonb.toJson(obj);
+        assertEquals("{\"foo\":" + now.toString().length() + "}", json);
+        
+        PropertyTypeMismatch after = defaultJsonb.fromJson("{\"foo\":\"" + now.toString() + "\"}", PropertyTypeMismatch.class);
+        assertEquals(obj.getFoo(), after.getFoo());
+        assertEquals(obj.internalInstantProperty, after.internalInstantProperty);
     }
 }

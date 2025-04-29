@@ -1,27 +1,25 @@
-/*******************************************************************************
- * Copyright (c) 2015, 2018 Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2015, 2020 Oracle and/or its affiliates. All rights reserved.
+ *
  * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License v1.0 and Eclipse Distribution License v. 1.0
- * which accompanies this distribution.
- * The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
- * and the Eclipse Distribution License is available at
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0,
+ * or the Eclipse Distribution License v. 1.0 which is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
  *
- * Contributors:
- *     Dmitry Kornilov - initial implementation
- ******************************************************************************/
+ * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
+ */
+
 package org.eclipse.yasson.defaultmapping.basic;
 
-import org.eclipse.yasson.internal.JsonBindingBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.eclipse.yasson.Jsonbs.*;
 
-import javax.json.bind.Jsonb;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * Default mapping primitives tests.
@@ -32,33 +30,38 @@ public class BasicTest {
 
     @Test
     public void testMarshallEscapedString() {
-        final Jsonb jsonb = (new JsonBindingBuilder()).build();
-        assertEquals("[\" \\\\ \\\" / \\f\\b\\r\\n\\t 9\"]", jsonb.toJson(new String[] {" \\ \" / \f\b\r\n\t \u0039"}));
+        assertEquals("[\" \\\\ \\\" / \\f\\b\\r\\n\\t 9\"]", bindingJsonb.toJson(new String[] {" \\ \" / \f\b\r\n\t \u0039"}));
     }
 
     @Test
     public void testMarshallWriter() {
-        final Jsonb jsonb = (new JsonBindingBuilder()).build();
         Writer writer = new StringWriter();
-        jsonb.toJson(new Long[]{5L}, writer);
+        bindingJsonb.toJson(new Long[]{5L}, writer);
         assertEquals("[5]", writer.toString());
+    }
+    
+    @Test
+    public void testDoubleWriter() throws Exception {
+        Writer writer = new StringWriter();
+        writer.write("{");
+        bindingJsonb.toJson("Hello", writer);
+        writer.write(",");
+        bindingJsonb.toJson("World", writer);
+        writer.write("}");
+        assertEquals("{\"Hello\",\"World\"}", writer.toString());
     }
 
     @Test
     public void testMarshallOutputStream() throws IOException {
-        final Jsonb jsonb = (new JsonBindingBuilder()).build();
-
         try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            jsonb.toJson(new Long[]{5L}, baos);
+        	bindingJsonb.toJson(new Long[]{5L}, baos);
             assertEquals("[5]", baos.toString("UTF-8"));
         }
     }
 
     @Test
     public void testObjectSerialization() {
-        Jsonb jsonb = (new JsonBindingBuilder()).build();
-        final String val =  jsonb.toJson(new Object());
+        final String val = bindingJsonb.toJson(new Object());
         assertEquals("{}", val);
     }
-
 }

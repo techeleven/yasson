@@ -1,17 +1,18 @@
-/*******************************************************************************
- * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2016, 2020 Oracle and/or its affiliates. All rights reserved.
+ *
  * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License v1.0 and Eclipse Distribution License v. 1.0
- * which accompanies this distribution.
- * The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
- * and the Eclipse Distribution License is available at
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0,
+ * or the Eclipse Distribution License v. 1.0 which is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
  *
- * Contributors:
- * Roman Grigoriadi
- ******************************************************************************/
+ * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
+ */
 
 package org.eclipse.yasson.defaultmapping.specific;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.eclipse.yasson.defaultmapping.specific.model.Address;
 import org.eclipse.yasson.defaultmapping.specific.model.Customer;
@@ -21,8 +22,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author Roman Grigoriadi
@@ -56,7 +55,7 @@ public abstract class CustomerTest {
         assertEquals(Integer.valueOf(2), customer.getStringIntegerMap().get("second"));*/
     }
 
-    protected Customer createCustomer(String customerName) {
+    protected static Customer createCustomer(String customerName) {
         Street street = new Street("Zoubkova", 111);
         Address address = new Address(street, "Prague");
         Customer customer = new Customer(33, customerName);

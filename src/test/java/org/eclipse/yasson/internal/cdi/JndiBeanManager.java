@@ -1,41 +1,45 @@
-/*******************************************************************************
- * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2018, 2024 Oracle and/or its affiliates. All rights reserved.
+ *
  * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License v1.0 and Eclipse Distribution License v. 1.0
- * which accompanies this distribution.
- * The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
- * and the Eclipse Distribution License is available at
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0,
+ * or the Eclipse Distribution License v. 1.0 which is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
- ******************************************************************************/
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
+ */
+
 package org.eclipse.yasson.internal.cdi;
 
-import javax.el.ELResolver;
-import javax.el.ExpressionFactory;
-import javax.enterprise.context.spi.Context;
-import javax.enterprise.context.spi.Contextual;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.event.Event;
-import javax.enterprise.inject.Instance;
-import javax.enterprise.inject.spi.AnnotatedField;
-import javax.enterprise.inject.spi.AnnotatedMember;
-import javax.enterprise.inject.spi.AnnotatedMethod;
-import javax.enterprise.inject.spi.AnnotatedParameter;
-import javax.enterprise.inject.spi.AnnotatedType;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanAttributes;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.Decorator;
-import javax.enterprise.inject.spi.Extension;
-import javax.enterprise.inject.spi.InjectionPoint;
-import javax.enterprise.inject.spi.InjectionTarget;
-import javax.enterprise.inject.spi.InjectionTargetFactory;
-import javax.enterprise.inject.spi.InterceptionFactory;
-import javax.enterprise.inject.spi.InterceptionType;
-import javax.enterprise.inject.spi.Interceptor;
-import javax.enterprise.inject.spi.ObserverMethod;
-import javax.enterprise.inject.spi.ProducerFactory;
+import jakarta.el.ELResolver;
+import jakarta.el.ExpressionFactory;
+import jakarta.enterprise.context.spi.Context;
+import jakarta.enterprise.context.spi.Contextual;
+import jakarta.enterprise.context.spi.CreationalContext;
+import jakarta.enterprise.event.Event;
+import jakarta.enterprise.inject.Instance;
+import jakarta.enterprise.inject.spi.AnnotatedField;
+import jakarta.enterprise.inject.spi.AnnotatedMember;
+import jakarta.enterprise.inject.spi.AnnotatedMethod;
+import jakarta.enterprise.inject.spi.AnnotatedParameter;
+import jakarta.enterprise.inject.spi.AnnotatedType;
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.BeanAttributes;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.Decorator;
+import jakarta.enterprise.inject.spi.Extension;
+import jakarta.enterprise.inject.spi.InjectionPoint;
+import jakarta.enterprise.inject.spi.InjectionTarget;
+import jakarta.enterprise.inject.spi.InjectionTargetFactory;
+import jakarta.enterprise.inject.spi.InterceptionFactory;
+import jakarta.enterprise.inject.spi.InterceptionType;
+import jakarta.enterprise.inject.spi.Interceptor;
+import jakarta.enterprise.inject.spi.ObserverMethod;
+import jakarta.enterprise.inject.spi.ProducerFactory;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -77,11 +81,6 @@ public class JndiBeanManager implements BeanManager {
 
     @Override
     public void validate(InjectionPoint injectionPoint) {
-
-    }
-
-    @Override
-    public void fireEvent(Object event, Annotation... qualifiers) {
 
     }
 
@@ -166,6 +165,11 @@ public class JndiBeanManager implements BeanManager {
     }
 
     @Override
+    public Collection<Context> getContexts(Class<? extends Annotation> aClass) {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    @Override
     public ELResolver getELResolver() {
         throw new UnsupportedOperationException("Not implemented");
     }
@@ -181,14 +185,8 @@ public class JndiBeanManager implements BeanManager {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public <T> InjectionTarget<T> createInjectionTarget(AnnotatedType<T> type) {
-        return (InjectionTarget<T>) new MockInjectionTarget();
-    }
-
-    @Override
     public <T> InjectionTargetFactory<T> getInjectionTargetFactory(AnnotatedType<T> annotatedType) {
-        throw new UnsupportedOperationException("Not implemented");
+        return new MockInjectionTargetFactory<>();
     }
 
     @Override
@@ -248,6 +246,16 @@ public class JndiBeanManager implements BeanManager {
 
     @Override
     public Instance<Object> createInstance() {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    @Override
+    public boolean isMatchingBean(Set<Type> set, Set<Annotation> set1, Type type, Set<Annotation> set2) {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    @Override
+    public boolean isMatchingEvent(Type type, Set<Annotation> set, Type type1, Set<Annotation> set1) {
         throw new UnsupportedOperationException("Not implemented");
     }
 }

@@ -1,35 +1,34 @@
-/*******************************************************************************
- * Copyright (c) 2016, 2018 Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2016, 2020 Oracle and/or its affiliates. All rights reserved.
+ *
  * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License v1.0 and Eclipse Distribution License v. 1.0
- * which accompanies this distribution.
- * The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
- * and the Eclipse Distribution License is available at
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0,
+ * or the Eclipse Distribution License v. 1.0 which is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
  *
- * Contributors:
- * Roman Grigoriadi
- ******************************************************************************/
+ * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
+ */
 
 package org.eclipse.yasson.internal.cdi;
 
-import org.eclipse.yasson.internal.components.JsonbComponentInstanceCreatorFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.CDI;
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
-import javax.json.bind.JsonbConfig;
-import javax.json.bind.config.PropertyVisibilityStrategy;
+import org.eclipse.yasson.internal.components.JsonbComponentInstanceCreatorFactory;
+
+import jakarta.enterprise.inject.spi.Bean;
+import jakarta.enterprise.inject.spi.BeanManager;
+import jakarta.enterprise.inject.spi.CDI;
+import jakarta.json.bind.Jsonb;
+import jakarta.json.bind.JsonbBuilder;
+import jakarta.json.bind.JsonbConfig;
+import jakarta.json.bind.config.PropertyVisibilityStrategy;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map;
-
-import static org.junit.Assert.*;
 
 /**
  * @author Roman Grigoriadi

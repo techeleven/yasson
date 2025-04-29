@@ -1,49 +1,62 @@
-/*******************************************************************************
- * Copyright (c) 2016, 2018 Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2016, 2022 Oracle and/or its affiliates. All rights reserved.
+ *
  * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License v1.0 and Eclipse Distribution License v. 1.0
- * which accompanies this distribution.
- * The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
- * and the Eclipse Distribution License is available at
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0,
+ * or the Eclipse Distribution License v. 1.0 which is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
  *
- * Contributors:
- * Roman Grigoriadi
- ******************************************************************************/
+ * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
+ */
 
 package org.eclipse.yasson.internal;
-
-import org.eclipse.yasson.internal.components.JsonbComponentInstanceCreatorFactory;
-import org.eclipse.yasson.spi.JsonbComponentInstanceCreator;
-
-import javax.json.bind.JsonbConfig;
-import javax.json.spi.JsonProvider;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.logging.Logger;
 
+import jakarta.json.bind.JsonbConfig;
+import jakarta.json.bind.JsonbException;
+import jakarta.json.spi.JsonProvider;
+import jakarta.json.stream.JsonGenerator;
+import jakarta.json.stream.JsonParserFactory;
+
+import org.eclipse.yasson.internal.components.JsonbComponentInstanceCreatorFactory;
+import org.eclipse.yasson.internal.deserializer.DeserializationModelCreator;
+import org.eclipse.yasson.internal.properties.MessageKeys;
+import org.eclipse.yasson.internal.properties.Messages;
+import org.eclipse.yasson.internal.serializer.SerializationModelCreator;
+import org.eclipse.yasson.spi.JsonbComponentInstanceCreator;
+
 /**
  * Jsonb context holding central components and configuration of jsonb runtime. Scoped to instance of Jsonb runtime.
- *
- * @author Roman Grigoriadi
  */
 public class JsonbContext {
-    
-    private static final Logger log = Logger.getLogger(JsonbContext.class.getName());
+
+    private static final Logger LOGGER = Logger.getLogger(JsonbContext.class.getName());
 
     private final JsonbConfig jsonbConfig;
 
     private final MappingContext mappingContext;
 
+    private final DeserializationModelCreator deserializationModelCreator;
+
+    private final SerializationModelCreator serializationModelCreator;
+
     private final JsonbComponentInstanceCreator componentInstanceCreator;
 
     private final JsonProvider jsonProvider;
+
+    private final JsonParserFactory jsonParserFactory;
 
     private final ComponentMatcher componentMatcher;
 
@@ -51,24 +64,24 @@ public class JsonbContext {
 
     private final JsonbConfigProperties configProperties;
 
-    private final InstanceCreator instanceCreator;
-
     /**
      * Creates and initialize context.
      *
-     * @param jsonbConfig jsonb jsonbConfig not null
+     * @param jsonbConfig  jsonb jsonbConfig not null
      * @param jsonProvider provider of JSONP
      */
     public JsonbContext(JsonbConfig jsonbConfig, JsonProvider jsonProvider) {
         Objects.requireNonNull(jsonbConfig);
         this.jsonbConfig = jsonbConfig;
         this.mappingContext = new MappingContext(this);
-        this.instanceCreator = new InstanceCreator();
-        this.componentInstanceCreator = initComponentInstanceCreator(instanceCreator);
+        this.componentInstanceCreator = initComponentInstanceCreator();
         this.componentMatcher = new ComponentMatcher(this);
         this.annotationIntrospector = new AnnotationIntrospector(this);
         this.jsonProvider = jsonProvider;
+        this.jsonParserFactory = initJsonParserFactory();
         this.configProperties = new JsonbConfigProperties(jsonbConfig);
+        this.deserializationModelCreator = new DeserializationModelCreator(this);
+        this.serializationModelCreator = new SerializationModelCreator(this);
     }
 
     /**
@@ -89,6 +102,23 @@ public class JsonbContext {
         return mappingContext;
     }
 
+    /**
+     * Get chain model creator.
+     *
+     * @return chain model creator
+     */
+    public DeserializationModelCreator getChainModelCreator() {
+        return deserializationModelCreator;
+    }
+
+    /**
+     * Get serialization model creator.
+     *
+     * @return serialization model creator
+     */
+    public SerializationModelCreator getSerializationModelCreator() {
+        return serializationModelCreator;
+    }
 
     /**
      * Gets JSONP provider.
@@ -126,21 +156,42 @@ public class JsonbContext {
         return annotationIntrospector;
     }
 
-
     public JsonbConfigProperties getConfigProperties() {
         return configProperties;
     }
 
-
-    /**
-     * Returns component for creating instances of non-parsed types.
-     * @return InstanceCreator
-     */
-    public InstanceCreator getInstanceCreator() {
-        return instanceCreator;
+    public JsonParserFactory getJsonParserFactory() {
+        return jsonParserFactory;
     }
 
-    private JsonbComponentInstanceCreator initComponentInstanceCreator(InstanceCreator instanceCreator) {
+    private JsonParserFactory initJsonParserFactory() {
+        return jsonProvider.createParserFactory(createJsonpProperties(jsonbConfig));
+    }
+
+    /**
+     * Propagates properties from JsonbConfig to JSONP generator / parser factories.
+     *
+     * @param jsonbConfig jsonb config
+     * @return properties for JSONP generator / parser
+     */
+    protected Map<String, ?> createJsonpProperties(JsonbConfig jsonbConfig) {
+        //JSONP 1.0 actually ignores the value, just checks the key is present. Only set if JsonbConfig.FORMATTING is true.
+        final Optional<Object> property = jsonbConfig.getProperty(JsonbConfig.FORMATTING);
+        final Map<String, Object> factoryProperties = new HashMap<>();
+        if (property.isPresent()) {
+            final Object value = property.get();
+            if (!(value instanceof Boolean)) {
+                throw new JsonbException(Messages.getMessage(MessageKeys.JSONB_CONFIG_FORMATTING_ILLEGAL_VALUE));
+            }
+            if ((Boolean) value) {
+                factoryProperties.put(JsonGenerator.PRETTY_PRINTING, Boolean.TRUE);
+            }
+            return factoryProperties;
+        }
+        return factoryProperties;
+    }
+
+    private JsonbComponentInstanceCreator initComponentInstanceCreator() {
         ServiceLoader<JsonbComponentInstanceCreator> loader = AccessController
                 .doPrivileged((PrivilegedAction<ServiceLoader<JsonbComponentInstanceCreator>>) () -> ServiceLoader
                         .load(JsonbComponentInstanceCreator.class));
@@ -150,11 +201,11 @@ public class JsonbContext {
         }
         if (creators.isEmpty()) {
             // No service provider found - use the defaults
-            return JsonbComponentInstanceCreatorFactory.getComponentInstanceCreator(instanceCreator);
+            return JsonbComponentInstanceCreatorFactory.getComponentInstanceCreator();
         }
         creators.sort(Comparator.comparingInt(JsonbComponentInstanceCreator::getPriority).reversed());
         JsonbComponentInstanceCreator creator = creators.get(0);
-        log.finest("Component instance creator:" + creator.getClass());
+        LOGGER.finest("Component instance creator:" + creator.getClass());
         return creator;
     }
 

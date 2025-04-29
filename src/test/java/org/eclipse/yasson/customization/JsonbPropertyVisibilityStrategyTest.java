@@ -1,29 +1,28 @@
-/*******************************************************************************
- * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2016, 2020 Oracle and/or its affiliates. All rights reserved.
+ *
  * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License v1.0 and Eclipse Distribution License v. 1.0
- * which accompanies this distribution.
- * The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
- * and the Eclipse Distribution License is available at
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0,
+ * or the Eclipse Distribution License v. 1.0 which is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
  *
- * Contributors:
- * Roman Grigoriadi
- ******************************************************************************/
+ * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
+ */
 
 package org.eclipse.yasson.customization;
 
-import org.junit.Test;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.eclipse.yasson.Jsonbs.*;
 
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
-import javax.json.bind.JsonbConfig;
-import javax.json.bind.annotation.JsonbVisibility;
-import javax.json.bind.config.PropertyVisibilityStrategy;
+import jakarta.json.bind.Jsonb;
+import jakarta.json.bind.JsonbBuilder;
+import jakarta.json.bind.JsonbConfig;
+import jakarta.json.bind.annotation.JsonbVisibility;
+import jakarta.json.bind.config.PropertyVisibilityStrategy;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  * Tests custom {@link PropertyVisibilityStrategy}
@@ -158,8 +157,7 @@ public class JsonbPropertyVisibilityStrategyTest {
 
     @Test
     public void testAnnotatedPojo() {
-        final Jsonb jsonb = JsonbBuilder.create();
         AnnotatedPojo fieldPojo = new AnnotatedPojo("avalue", "bvalue", "cvalue", "dvalue");
-        assertEquals("{\"bfield\":\"bvalue\",\"bgetter\":\"bvalue\",\"cfield\":\"cvalue\",\"cgetter\":\"cvalue\"}", jsonb.toJson(fieldPojo));
+        assertEquals("{\"bfield\":\"bvalue\",\"bgetter\":\"bvalue\",\"cfield\":\"cvalue\",\"cgetter\":\"cvalue\"}", defaultJsonb.toJson(fieldPojo));
     }
 }

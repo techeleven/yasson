@@ -1,43 +1,33 @@
-/*******************************************************************************
- * Copyright (c) 2018 Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2018, 2020 Oracle and/or its affiliates. All rights reserved.
+ *
  * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License v1.0 and Eclipse Distribution License v. 1.0
- * which accompanies this distribution.
- * The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
- * and the Eclipse Distribution License is available at
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0,
+ * or the Eclipse Distribution License v. 1.0 which is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
  *
- * Contributors:
- *      Maxence Laurent
- ******************************************************************************/
+ * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
+ */
+
 package org.eclipse.yasson;
 
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.eclipse.yasson.Jsonbs.*;
+
 import org.eclipse.yasson.internal.JsonbContext;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
-import javax.json.bind.JsonbConfig;
-import javax.json.bind.annotation.JsonbProperty;
-import javax.json.spi.JsonProvider;
+import jakarta.json.bind.JsonbConfig;
+import jakarta.json.bind.annotation.JsonbProperty;
+import jakarta.json.spi.JsonProvider;
 import java.lang.reflect.Method;
-
-import static org.junit.Assert.assertEquals;
 
 /**
  *
  * @author Maxence Laurent
  */
 public class DefaultGetterInInterface {
-
-    private Jsonb jsonb;
-
-    @Before
-    public void before() {
-        jsonb = JsonbBuilder.create();
-    }
 
     public static interface Defaulted {
 
@@ -52,8 +42,8 @@ public class DefaultGetterInInterface {
     @Test
     public void testWithDefault() {
         PojoWithDefault pojo = new PojoWithDefault();
-        String result = jsonb.toJson(pojo);
-        Assert.assertEquals("{\"getterA\":\"valueA\"}", result);
+        String result = defaultJsonb.toJson(pojo);
+        assertEquals("{\"getterA\":\"valueA\"}", result);
     }
 
     public static interface WithGetterI {
@@ -122,19 +112,19 @@ public class DefaultGetterInInterface {
         JsonbContext jsonbContext = new JsonbContext(new JsonbConfig(), JsonProvider.provider());
 
         // direct implementation only (no default implementation)
-        Method pojoGetter = jsonbContext.getMappingContext().getOrCreateClassModel(Pojo.class).getPropertyModel("getterI").getPropagation().getGetter();
+        Method pojoGetter = jsonbContext.getMappingContext().getOrCreateClassModel(Pojo.class).getPropertyModel("getterI").getGetter();
 
         // default implementation
-        Method pojoDefaultOnlyGetter = jsonbContext.getMappingContext().getOrCreateClassModel(PojoWithDefaultOnly.class).getPropertyModel("getterI").getPropagation().getGetter();
+        Method pojoDefaultOnlyGetter = jsonbContext.getMappingContext().getOrCreateClassModel(PojoWithDefaultOnly.class).getPropertyModel("getterI").getGetter();
 
         // default implementation overriden by super class
-        Method pojoDefaultSuperGetter = jsonbContext.getMappingContext().getOrCreateClassModel(PojoWithDefaultSuperImplementation.class).getPropertyModel("getterI").getPropagation().getGetter();
+        Method pojoDefaultSuperGetter = jsonbContext.getMappingContext().getOrCreateClassModel(PojoWithDefaultSuperImplementation.class).getPropertyModel("getterI").getGetter();
 
         // default implementation
-        Method pojoDefaultImplementationGetter = jsonbContext.getMappingContext().getOrCreateClassModel(PojoWithDefaultImplementation.class).getPropertyModel("getterI").getPropagation().getGetter();
+        Method pojoDefaultImplementationGetter = jsonbContext.getMappingContext().getOrCreateClassModel(PojoWithDefaultImplementation.class).getPropertyModel("getterI").getGetter();
 
         // two default implementations
-        Method pojoTwoDefault = jsonbContext.getMappingContext().getOrCreateClassModel(PojoGetterDefaultedTwice.class).getPropertyModel("getterI").getPropagation().getGetter();
+        Method pojoTwoDefault = jsonbContext.getMappingContext().getOrCreateClassModel(PojoGetterDefaultedTwice.class).getPropertyModel("getterI").getGetter();
 
         // assert getters selected by ClassParser
         assertEquals(Pojo.class.getMethod("getGetterI"), pojoGetter);
@@ -144,16 +134,16 @@ public class DefaultGetterInInterface {
         assertEquals(PojoWithDefaultImplementation.class.getMethod("getGetterI"), pojoTwoDefault);
 
         // assert serialized json is correct, including property name as specified by JsonbProperty annotations
-        this.assertJson(new Pojo(), "implementation");
-        this.assertJson(new PojoNoAnnotation(), "withGetterI");
-        this.assertJson(new PojoWithDefaultOnly(), "default");
-        this.assertJson(new PojoWithDefaultSuperImplementation(), "implementation");
-        this.assertJson(new PojoWithDefaultImplementation(), "defaultImplementation");
-        this.assertJson(new PojoGetterDefaultedTwice(), "defaultImplementation");
+        assertJson(new Pojo(), "implementation");
+        assertJson(new PojoNoAnnotation(), "withGetterI");
+        assertJson(new PojoWithDefaultOnly(), "default");
+        assertJson(new PojoWithDefaultSuperImplementation(), "implementation");
+        assertJson(new PojoWithDefaultImplementation(), "defaultImplementation");
+        assertJson(new PojoGetterDefaultedTwice(), "defaultImplementation");
     }
 
-    private void assertJson(WithGetterI pojo, String expected){
+    private static void assertJson(WithGetterI pojo, String expected){
         assertEquals(expected, pojo.getGetterI());
-        assertEquals("{\"" + expected + "\":\"" + pojo.getGetterI() + "\"}", jsonb.toJson(pojo));
+        assertEquals("{\"" + expected + "\":\"" + pojo.getGetterI() + "\"}", defaultJsonb.toJson(pojo));
     }
 }

@@ -1,52 +1,41 @@
-/*******************************************************************************
- * Copyright (c) 2016, 2018 Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2021, 2022 Oracle and/or its affiliates. All rights reserved.
+ *
  * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License v1.0 and Eclipse Distribution License v. 1.0
- * which accompanies this distribution.
- * The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
- * and the Eclipse Distribution License is available at
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0,
+ * or the Eclipse Distribution License v. 1.0 which is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
  *
- * Contributors:
- * Roman Grigoriadi
- ******************************************************************************/
+ * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
+ */
 
 package org.eclipse.yasson.internal.serializer;
 
-import org.eclipse.yasson.internal.JsonbContext;
-
-import javax.json.bind.serializer.SerializationContext;
-import javax.json.stream.JsonGenerator;
 import java.util.Collection;
 
+import jakarta.json.stream.JsonGenerator;
+
+import org.eclipse.yasson.internal.SerializationContextImpl;
+
 /**
- * Serializer for collections.
- *
- * @author Roman Grigoriadi
+ * Collection container serializer.
  */
-public class CollectionSerializer<T extends Collection> extends AbstractContainerSerializer<T> implements EmbeddedItem {
+class CollectionSerializer implements ModelSerializer {
 
-    protected final JsonbContext jsonbContext;
+    private final ModelSerializer delegate;
 
-    protected CollectionSerializer(SerializerBuilder builder) {
-        super(builder);
-        this.jsonbContext = builder.getJsonbContext();
+    CollectionSerializer(ModelSerializer delegate) {
+        this.delegate = delegate;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    protected void serializeInternal(T collection, JsonGenerator generator, SerializationContext ctx) {
-        for (Object item : collection) {
-            serializeItem(item, generator, ctx);
-        }
-    }
-
-    @Override
-    protected void writeStart(JsonGenerator generator) {
+    public void serialize(Object value, JsonGenerator generator, SerializationContextImpl context) {
+        Collection<Object> collection = (Collection<Object>) value;
         generator.writeStartArray();
+        collection.forEach(object -> delegate.serialize(object, generator, context));
+        generator.writeEnd();
     }
 
-    @Override
-    protected void writeStart(String key, JsonGenerator generator) {
-        generator.writeStartArray(key);
-    }
 }

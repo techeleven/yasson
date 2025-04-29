@@ -1,11 +1,20 @@
+/*
+ * Copyright (c) 2019, 2020 Oracle and/or its affiliates. All rights reserved.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0,
+ * or the Eclipse Distribution License v. 1.0 which is available at
+ * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
+ */
+
 package org.eclipse.yasson.defaultmapping.lambda;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.Assert;
-
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.eclipse.yasson.Jsonbs.*;
 
 /**
  * Test marshalling objects generated using lambda expressions.
@@ -15,19 +24,12 @@ import javax.json.bind.JsonbBuilder;
  */
 public class LambdaExpressionTest {
 
-    private Jsonb jsonb;
-
-    @Before
-    public void before() {
-        jsonb = JsonbBuilder.create();
-    }
-
     @Test
     public void testMarshallFunctionalInterface() {
         String name = "WALL-E";
         Addressable control = new Robot(name);
         Addressable lambda = () -> name;
-        Assert.assertEquals(jsonb.toJson(control), jsonb.toJson(lambda));
+        assertEquals(defaultJsonb.toJson(control), defaultJsonb.toJson(lambda));
     }
 
     @Test
@@ -35,6 +37,6 @@ public class LambdaExpressionTest {
         String name = "Cheshire";
         Pet control = new Cat(name);
         Pet lambda = () -> name;
-        Assert.assertEquals(jsonb.toJson(control), jsonb.toJson(lambda));
+        assertEquals(defaultJsonb.toJson(control), defaultJsonb.toJson(lambda));
     }
 }

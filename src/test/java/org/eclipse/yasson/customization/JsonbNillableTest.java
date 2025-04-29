@@ -1,17 +1,26 @@
-/*******************************************************************************
- * Copyright (c) 2016, 2018 Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2016, 2020 Oracle and/or its affiliates. All rights reserved.
+ *
  * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License v1.0 and Eclipse Distribution License v. 1.0
- * which accompanies this distribution.
- * The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
- * and the Eclipse Distribution License is available at
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0,
+ * or the Eclipse Distribution License v. 1.0 which is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
  *
- * Contributors:
- * Roman Grigoriadi
- ******************************************************************************/
+ * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
+ */
 
 package org.eclipse.yasson.customization;
+
+import org.junit.jupiter.api.*;
+
+import jakarta.json.bind.Jsonb;
+import jakarta.json.bind.JsonbBuilder;
+import jakarta.json.bind.annotation.JsonbProperty;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+import static org.eclipse.yasson.Jsonbs.*;
 
 import org.eclipse.yasson.customization.model.JsonbNillableClassSecondLevel;
 import org.eclipse.yasson.customization.model.JsonbNillableOverriddenWithJsonbProperty;
@@ -21,51 +30,35 @@ import org.eclipse.yasson.customization.model.JsonbNillableValue;
 import org.eclipse.yasson.customization.model.packagelevelannotations.JsonbNillablePackageLevel;
 import org.eclipse.yasson.customization.model.packagelevelannotations.PackageLevelOverriddenWithClassLevel;
 import org.eclipse.yasson.defaultmapping.generics.model.ScalarValueWrapper;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
-import javax.json.bind.JsonbConfig;
-
-import static org.junit.Assert.assertEquals;
 
 /**
- * Tests a {@link javax.json.bind.annotation.JsonbNillable} annotation.
+ * Tests a {@link jakarta.json.bind.annotation.JsonbNillable} annotation.
  * @author Roman Grigoriadi
  */
 public class JsonbNillableTest {
 
-    private Jsonb jsonb;
-
-    @Before
-    public void setUp() throws Exception {
-        jsonb = JsonbBuilder.create();
-    }
-
     @Test
     public void testJsonbNillable() {
         JsonbNillableValue pojo = new JsonbNillableValue();
-        assertEquals("{\"nillableField\":null}", jsonb.toJson(pojo));
+        assertEquals("{\"nillableField\":null}", defaultJsonb.toJson(pojo));
     }
 
     @Test
     public void testJsonbNillableOverriddenWithJsonbProperty() {
         JsonbNillableOverriddenWithJsonbProperty pojo = new JsonbNillableOverriddenWithJsonbProperty();
-        assertEquals("{}", jsonb.toJson(pojo));
+        assertEquals("{}", defaultJsonb.toJson(pojo));
     }
 
     @Test
     public void testPackageLevelNillable() {
         JsonbNillablePackageLevel pojo = new JsonbNillablePackageLevel();
-        assertEquals("{\"packageLevelNillableField\":null}", jsonb.toJson(pojo));
+        assertEquals("{\"packageLevelNillableField\":null}", defaultJsonb.toJson(pojo));
     }
 
     @Test
     public void testPackageLevelOverriddenWithClassLevel() {
         PackageLevelOverriddenWithClassLevel pojo = new PackageLevelOverriddenWithClassLevel();
-        assertEquals("{}", jsonb.toJson(pojo));
+        assertEquals("{}", defaultJsonb.toJson(pojo));
     }
 
     /**
@@ -74,25 +67,42 @@ public class JsonbNillableTest {
     @Test
     public void testNillableInheritFromInterface() throws Exception {
         JsonbNillableClassSecondLevel pojo = new JsonbNillableClassSecondLevel();
-        assertEquals("{\"classNillable\":null}", jsonb.toJson(pojo));
+        assertEquals("{\"classNillable\":null}", defaultJsonb.toJson(pojo));
     }
 
     @Test
     public void testInheritanceOverride() throws Exception {
         JsonbNillableOverridesInterface overridesInterface = new JsonbNillableOverridesInterface();
-        assertEquals("{}", jsonb.toJson(overridesInterface));
+        assertEquals("{}", defaultJsonb.toJson(overridesInterface));
 
         JsonbNillableOverridesClass overridesClass = new JsonbNillableOverridesClass();
-        assertEquals("{}", jsonb.toJson(overridesClass));
+        assertEquals("{}", defaultJsonb.toJson(overridesClass));
     }
 
     @Test
     public void testNillableInConfig() {
-        JsonbConfig jsonbConfig = new JsonbConfig().withNullValues(true);
-        Jsonb jsonb = JsonbBuilder.create(jsonbConfig);
-
-        String jsonString = jsonb.toJson(new ScalarValueWrapper<String>(){});
-        Assert.assertEquals("{\"value\":null}", jsonString);
+        String jsonString = nullableJsonb.toJson(new ScalarValueWrapper<String>(){});
+        assertEquals("{\"value\":null}", jsonString);
     }
+    
+    public static class PrimitiveNullBoolean {
 
+        @JsonbProperty(nillable = true)
+        private Boolean someBoolean;
+
+        void setSomeBoolean(boolean value) { // note that value is a primitive boolean
+            // leaving this empty, exception will be thrown before Yasson gets here.
+        }
+    }
+    
+    /**
+     * Test for issue https://github.com/eclipse-ee4j/yasson/issues/399
+     */
+    @Test
+    public void testNillableSomeBoolean() {
+    	Jsonb jsonb = JsonbBuilder.create();
+        String input = "{\"someBoolean\": null}";
+        PrimitiveNullBoolean deserialized = jsonb.fromJson(input, PrimitiveNullBoolean.class);
+        assertNull(deserialized.someBoolean);
+    }
 }

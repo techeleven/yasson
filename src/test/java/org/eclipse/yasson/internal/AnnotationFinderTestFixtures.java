@@ -1,4 +1,18 @@
+/*
+ * Copyright (c) 2019, 2020 Oracle and/or its affiliates. All rights reserved.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0,
+ * or the Eclipse Distribution License v. 1.0 which is available at
+ * http://www.eclipse.org/org/documents/edl-v10.php.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
+ */
+
 package org.eclipse.yasson.internal;
+
+import org.junit.jupiter.api.*;
 
 import static java.lang.annotation.ElementType.CONSTRUCTOR;
 import static java.lang.annotation.ElementType.METHOD;
@@ -10,9 +24,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.junit.Ignore;
-
-@Ignore
+@Disabled
 class AnnotationFinderTestFixtures {
 
     public static final String TESTVALUE = "testvalue";
@@ -47,14 +59,14 @@ class AnnotationFinderTestFixtures {
     }
 
     public static class ObjectWithIgnoredMethod {
-        @Ignore
+        @Disabled
         public void annotatedMethod() {
             // empty
         }
     }
 
     public static class ObjectWithDeprecatedAndIgnoredMethod {
-        @Ignore
+    	@Disabled
         @Deprecated
         public void annotatedMethod() {
             // empty
@@ -69,7 +81,7 @@ class AnnotationFinderTestFixtures {
     }
 
     public static class ObjectWithIgnoredAndInheritedDeprecatedMethod {
-        @Ignore
+    	@Disabled
         @AnnotationAnnotatedWithDeprecated
         public void annotatedMethod() {
             // empty

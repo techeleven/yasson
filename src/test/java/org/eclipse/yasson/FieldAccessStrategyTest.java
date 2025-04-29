@@ -1,24 +1,23 @@
-/*******************************************************************************
- * Copyright (c) 2016, 2018 Oracle and/or its affiliates. All rights reserved.
+/*
+ * Copyright (c) 2016, 2020 Oracle and/or its affiliates. All rights reserved.
+ *
  * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License v1.0 and Eclipse Distribution License v. 1.0
- * which accompanies this distribution.
- * The Eclipse Public License is available at http://www.eclipse.org/legal/epl-v10.html
- * and the Eclipse Distribution License is available at
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0,
+ * or the Eclipse Distribution License v. 1.0 which is available at
  * http://www.eclipse.org/org/documents/edl-v10.php.
  *
- * Contributors:
- * Roman Grigoriadi
- ******************************************************************************/package org.eclipse.yasson;
+ * SPDX-License-Identifier: EPL-2.0 OR BSD-3-Clause
+ */package org.eclipse.yasson;
 
-import org.junit.Assert;
-import org.junit.Test;
+ import org.junit.jupiter.api.*;
+ import static org.junit.jupiter.api.Assertions.*;
 
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
-import javax.json.bind.JsonbConfig;
-import javax.json.bind.annotation.JsonbTransient;
-import javax.json.bind.config.PropertyVisibilityStrategy;
+import jakarta.json.bind.Jsonb;
+import jakarta.json.bind.JsonbBuilder;
+import jakarta.json.bind.JsonbConfig;
+import jakarta.json.bind.annotation.JsonbTransient;
+import jakarta.json.bind.config.PropertyVisibilityStrategy;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
@@ -62,11 +61,11 @@ public class FieldAccessStrategyTest {
 
         String expected = "{\"strField\":\"pojo string\"}";
 
-        Assert.assertEquals(expected, jsonb.toJson(pojo));
+        assertEquals(expected, jsonb.toJson(pojo));
         PrivateFields result = jsonb.fromJson(expected, PrivateFields.class);
-        Assert.assertEquals(false, result.getterCalled);
-        Assert.assertEquals(false, result.setterCalled);
-        Assert.assertEquals("pojo string", result.strField);
+        assertEquals(false, result.getterCalled);
+        assertEquals(false, result.setterCalled);
+        assertEquals("pojo string", result.strField);
     }
 
 
@@ -79,9 +78,9 @@ public class FieldAccessStrategyTest {
 
         String expected = "{}";
 
-        Assert.assertEquals(expected, jsonb.toJson(pojo));
+        assertEquals(expected, jsonb.toJson(pojo));
         PublicFields result = jsonb.fromJson("{\"strField\":\"pojo string\"}", PublicFields.class);
-        Assert.assertEquals(null, result.strField);
+        assertEquals(null, result.strField);
     }
 
     /**
@@ -96,13 +95,13 @@ public class FieldAccessStrategyTest {
         simpleContainer.setStringInstance("Test String");
         simpleContainer.setIntegerInstance(10);
         simpleContainer.setFloatInstance(10.0f);
-        Assert.assertEquals(json, jsonb.toJson(simpleContainer));
+        assertEquals(json, jsonb.toJson(simpleContainer));
 
 
         SimpleContainer result = jsonb.fromJson("{ \"stringInstance\" : \"Test String\", \"floatInstance\" : 1.0, \"integerInstance\" : 1 }", SimpleContainer.class);
-        Assert.assertEquals("Test String", result.stringInstance);
-        Assert.assertNull(result.integerInstance);
-        Assert.assertNull(result.floatInstance);
+        assertEquals("Test String", result.stringInstance);
+        assertNull(result.integerInstance);
+        assertNull(result.floatInstance);
     }
 
     public class CustomVisibilityStrategy implements PropertyVisibilityStrategy {
