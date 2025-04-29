@@ -12,16 +12,21 @@
 
 package org.eclipse.yasson.internal.jsonstructure;
 
-import jakarta.json.*;
-import jakarta.json.bind.JsonbException;
-import jakarta.json.stream.JsonLocation;
-import jakarta.json.stream.JsonParser;
-import org.eclipse.yasson.internal.properties.MessageKeys;
-import org.eclipse.yasson.internal.properties.Messages;
-
 import java.math.BigDecimal;
 import java.util.ArrayDeque;
 import java.util.Deque;
+
+import jakarta.json.JsonArray;
+import jakarta.json.JsonNumber;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonStructure;
+import jakarta.json.JsonValue;
+import jakarta.json.bind.JsonbException;
+import jakarta.json.stream.JsonLocation;
+import jakarta.json.stream.JsonParser;
+
+import org.eclipse.yasson.internal.properties.MessageKeys;
+import org.eclipse.yasson.internal.properties.Messages;
 
 /**
  * Adapter for {@link JsonParser}, that reads a {@link JsonStructure} content tree instead of JSON text.
