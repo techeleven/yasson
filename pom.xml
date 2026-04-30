@@ -25,7 +25,7 @@
 
     <groupId>org.eclipse</groupId>
     <artifactId>yasson</artifactId>
-    <version>3.0.5-SNAPSHOT</version>
+    <version>3.0.4-tech11-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Yasson</name>
 
